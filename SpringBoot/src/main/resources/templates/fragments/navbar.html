@@ -1,0 +1,33 @@
+<!-- fragments/navbar.html -->
+<div th:fragment="navbar(name)">
+  <nav>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <a th:href="@{/mainPage}" style="margin-right: 15px;">Главная</a>
+        <a th:href="@{/players}" style="margin-right: 15px;">Игроки</a>
+      </div>
+
+      <!-- Если пользователь вошёл -->
+      <div th:if="${name}">
+
+        <!-- Кнопка Нотификации -->
+        <a th:href="@{/notifications}" style="margin: 0 10px;">Уведомления</a>
+
+        <!-- Кнопка Профиль -->
+        <a th:href="@{/profile}" style="margin: 0 10px;">Профиль</a>
+
+        <!-- Кнопка Выход -->
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+          <button type="submit">Выйти</button>
+        </form>
+
+      </div>
+
+      <!-- Если пользователь не вошёл -->
+      <div th:unless="${name}">
+        <a th:href="@{/login}" style="margin-right: 10px;">Вход</a>
+        <a th:href="@{/register}">Регистрация</a>
+      </div>
+    </div>
+  </nav>
+</div>

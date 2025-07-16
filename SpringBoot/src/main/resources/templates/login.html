@@ -1,0 +1,35 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label, input {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
+<div class="container">
+    <div th:if="${param.error}" class="error">Неверный email или пароль</div>
+    <div th:if="${param.logout}" class="success">Вы вышли из системы</div>
+    <div th:if="${param.registered}" class="success">Регистрация прошла успешно! Войдите.</div>
+    <h1>Вход</h1>
+    <form th:action="@{/login}" method="post">
+        <label>Email: <input type="text" name="username"/></label>
+        <label>Пароль: <input type="password" name="password"/></label>
+        <button type="submit">Войти</button>
+    </form>
+    <p>Нет аккаунта? <a th:href="@{/register}">Зарегистрируйтесь здесь</a></p>
+</div>
+</body>
+</html>

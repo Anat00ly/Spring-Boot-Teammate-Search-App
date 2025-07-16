@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Настройки профиля</title>
+
+    <!-- Подключаем стили Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Немного стилей для контейнера -->
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/navbar :: navbar(${player.email})"></div>
+
+<div class="container">
+    <h1>Настройки профиля</h1>
+
+    <form th:action="@{/settings}" th:object="${player}" method="post">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <div>
+            <label>Имя:
+                <input type="text" th:field="*{name}" />
+            </label>
+        </div>
+
+        <div>
+            <label>Дата рождения:
+                <input type="date"
+                       name="birthday"
+                       th:value="${player.birthday != null} ? ${#temporals.format(player.birthday, 'yyyy-MM-dd')} : ''"
+                       class="form-control" />
+            </label>
+        </div>
+
+        <div>
+            <label>Пол:
+                <select th:field="*{gender}">
+                    <option value="Мужской">Мужской</option>
+                    <option value="Женский">Женский</option>
+                    <option value="Другое">Другое</option>
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>Страна:
+                <select th:field="*{country}">
+                    <option th:each="country : ${countries}" th:value="${country}" th:text="${country}"></option>
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>Часовой пояс:
+                <select th:field="*{timezone}">
+                    <option th:each="timezone : ${timezones}" th:value="${timezone}" th:text="${timezone}"></option>
+                </select>
+            </label>
+        </div>
+
+        <div>
+            <label>Владение языками:
+                <select th:field="*{languages}">
+                    <option th:each="lang : ${languages}" th:value="${lang}" th:text="${lang}"></option>
+                </select>
+            </label>
+        </div>
+        <div>
+            <label>Игры:
+                <select th:field="*{games}">
+                    <option th:each="lang : ${games}" th:value="${lang}" th:text="${lang}"></option>
+                </select>
+            </label>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit">Сохранить изменения</button>
+        </div>
+    </form>
+</div>
+
+<!-- Подключаем jQuery (нужен для Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Подключаем JS Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Инициализация Select2 -->
+<script>
+    $(document).ready(function () {
+        $('.language-select').select2({
+            placeholder: "Выберите языки",
+            width: '100%',
+            language: "ru",
+            allowClear: true
+        });
+    });
+</script>
+
+
+</body>
+</html>

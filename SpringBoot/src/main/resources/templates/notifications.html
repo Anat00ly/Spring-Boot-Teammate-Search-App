@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Уведомления</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .notification {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .notification.read {
+            background-color: #f0f0f0;
+        }
+        .notification .message {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        .notification .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .notification .actions button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar(name=${name})}"></div>
+<h1>Уведомления</h1>
+
+<div th:if="${notifications.isEmpty()}">
+    <p>Уведомлений нет.</p>
+</div>
+
+<div th:unless="${notifications.isEmpty()}">
+    <form th:action="@{/notifications/markAllAsRead}" method="post">
+        <button type="submit">Отметить всё как прочитанное</button>
+    </form>
+
+    <div th:each="notification : ${notifications}">
+        <div class="notification" th:classappend="${notification.isRead} ? 'read'">
+            <i th:class="${notification.type.iconClass}"></i>
+            <span class="message" th:text="${notification.message}"></span>
+            <div class="actions">
+                <div th:if="${notification.type == T(com.example.research2.SpringBoot.models.NotificationType).FRIEND_REQUEST and !notification.isRead}">
+                    <form th:action="@{/friendship/accept/{id}(id=${notification.id})}" method="post">
+                        <button type="submit">Принять</button>
+                    </form>
+                    <form th:action="@{/friendship/reject/{id}(id=${notification.id})}" method="post">
+                        <button type="submit">Отклонить</button>
+                    </form>
+                </div>
+                <form th:action="@{/notifications/delete/{id}(id=${notification.id})}" method="post">
+                    <button type="submit">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

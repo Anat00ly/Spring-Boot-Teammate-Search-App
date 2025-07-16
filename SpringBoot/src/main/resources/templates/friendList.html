@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои друзья</title>
+</head>
+<body>
+<div th:replace="fragments/navbar :: navbar(${player.   name})"></div>
+
+<h2>Ваши друзья</h2>
+
+<div th:if="${#lists.isEmpty(friends)}">
+    <p>У вас пока нет друзей.</p>
+</div>
+
+<ul th:each="friend : ${friends}">
+    <li>
+        <span th:text="${friend.name}">Имя друга</span>
+        <a th:href="@{/profile/{id}(id=${friend.id})}">Посмотреть профиль</a>
+    </li>
+</ul>
+
+</body>
+</html>
