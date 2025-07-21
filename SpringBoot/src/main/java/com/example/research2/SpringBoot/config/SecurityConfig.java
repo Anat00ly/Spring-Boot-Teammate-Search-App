@@ -48,7 +48,7 @@ public class SecurityConfig {
                         // Указываем кастомную страницу входа
                         .loginPage("/login")
                         // URL для перенаправления после успешного входа
-                        .defaultSuccessUrl("/mainPage", true)
+                        .defaultSuccessUrl("/", true)
                         // URL для перенаправления при ошибке входа
                         .failureUrl("/login?error=true")
                         // Разрешаем доступ к форме входа всем

@@ -69,14 +69,14 @@
 
     <!-- Навигационная панель -->
     <div class="profile-nav">
-        <a href="#" class="active">Профиль</a>
 
+        <a href="#" class="active">Профиль</a>
 
         <a th:if="${player.id == currentUserId}" th:href="@{/settings}">Настройки</a>
 
-
         <a th:if="${player.id == currentUserId}" th:href="@{/profile/friendList}">Друзья</a>
 
+        <a th:if="${player.id == currentUserId}" th:href="@{/create-post}">Создать пост</a>
 
     </div>
 

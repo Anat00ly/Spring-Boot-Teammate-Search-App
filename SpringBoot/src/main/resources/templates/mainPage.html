@@ -1,12 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <title>Главная страница</title>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <style>
+        .post {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<p1>This is a main page!</p1>
-
+<h1>Найди тиммейта!</h1>
+<div th:each="post : ${posts}" class="post">
+    <h3 th:text="${post.player.name}">Имя пользователя</h3>
+    <p>Игра: <span th:text="${post.game}"></span></p>
+    <p>Описание: <span th:text="${post.description}"></span></p>
+    <p>Уровень: <span th:text="${post.quantityOfHours}"></span></p>
+    <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+</div>
 </body>
 </html>

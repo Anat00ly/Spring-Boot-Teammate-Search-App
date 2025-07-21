@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Создать пост</title>
+  <meta charset="UTF-8">
+  <style>
+    .form-container {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
+<h1>Создать новый пост</h1>
+<div class="form-container">
+  <form th:object="${newPost}" th:action="@{/post}" method="post">
+    <div>
+      <label>Игра:</label>
+      <select th:field="*{game}" required>
+        <option value="">Выберите игру</option>
+        <option th:each="game : ${game}" th:value="${game}" th:text="${game}"></option>
+      </select>
+    </div>
+    <div>
+      <label>Описание:</label>
+      <textarea th:field="*{description}" required></textarea>
+    </div>
+    <div>
+      <label>Количество часов:</label>
+      <input type="number" th:field="*{quantityOfHours}" min="0" required/>
+    </div>
+    <button type="submit">Опубликовать</button>
+  </form>
+</div>
+<a th:href="@{/}">Вернуться на главную</a>
+</body>
+</html>
