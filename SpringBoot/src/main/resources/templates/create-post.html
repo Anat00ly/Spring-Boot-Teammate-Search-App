@@ -17,6 +17,10 @@
 <div class="form-container">
   <form th:object="${newPost}" th:action="@{/post}" method="post">
     <div>
+      <label>Название:</label>
+      <input type="text" th:field="*{title}" required />
+    </div>
+    <div>
       <label>Игра:</label>
       <select th:field="*{game}" required>
         <option value="">Выберите игру</option>

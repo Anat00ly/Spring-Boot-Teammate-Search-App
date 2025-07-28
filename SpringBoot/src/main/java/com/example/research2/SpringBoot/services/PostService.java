@@ -30,6 +30,7 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + playerId));
 
         Post newPost = new Post();
+        newPost.setTitle(post.getTitle());
         newPost.setPlayer(player);
         newPost.setGame(post.getGame());
         newPost.setDescription(post.getDescription());
@@ -37,5 +38,10 @@ public class PostService {
         newPost.setCreatedAt(LocalDateTime.now());
 
         return postRepo.save(newPost);
+    }
+
+    public Post findPostById(Long id) {
+        return postRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Can't find the post"));
     }
 }

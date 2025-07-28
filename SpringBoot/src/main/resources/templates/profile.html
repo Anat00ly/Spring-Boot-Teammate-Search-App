@@ -9,17 +9,14 @@
             margin: 0 auto;
             padding: 20px;
         }
-
         .profile-header {
             margin-bottom: 30px;
         }
-
         .profile-nav {
             display: flex;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
         }
-
         .profile-nav a {
             padding: 10px 15px;
             text-decoration: none;
@@ -28,60 +25,42 @@
             border-bottom: none;
             margin-right: 5px;
         }
-
         .profile-nav a.active {
             border-color: #ddd;
             border-bottom-color: #fff;
             background: #fff;
             color: #007bff;
         }
-
         .profile-nav a:hover {
             background: #f8f9fa;
         }
-
         .profile-info {
             background: #f9f9f9;
             padding: 20px;
             border-radius: 5px;
         }
-
         .profile-info p {
             margin-bottom: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
         }
-
         .profile-info p:last-child {
             border-bottom: none;
         }
     </style>
 </head>
 <body>
-
-<!-- Навбар -->
 <div th:replace="~{fragments/navbar :: navbar(${player.email})}"></div>
-
 <div class="profile-container">
     <div class="profile-header">
         <h1>Профиль пользователя: <span th:text="${player.name}"></span></h1>
     </div>
-
-    <!-- Навигационная панель -->
     <div class="profile-nav">
-
         <a href="#" class="active">Профиль</a>
-
         <a th:if="${player.id == currentUserId}" th:href="@{/settings}">Настройки</a>
-
         <a th:if="${player.id == currentUserId}" th:href="@{/profile/friendList}">Друзья</a>
-
         <a th:if="${player.id == currentUserId}" th:href="@{/create-post}">Создать пост</a>
-
     </div>
-
-
-    <!-- Содержимое вкладки -->
     <div class="profile-content">
         <div class="profile-info">
             <p><strong>Имя:</strong> <span th:text="${player.name}"></span></p>
@@ -104,19 +83,21 @@
             <p><strong>Игры:</strong>
                 <span th:text="${player.games != null ? player.games : 'Не указан'}"></span>
             </p>
+            <p><strong>Telegram:</strong>
+                <span th:if="${player.tgLink != null}">
+                    <a th:href="${player.tgLink}" th:text="${player.tgLink}" target="_blank"></a>
+                </span>
+                <span th:unless="${player.tgLink != null}">Не указан</span>
+            </p>
         </div>
     </div>
-    <!-- Кнопки "Добавить в друзья" / "Удалить из друзей" -->
     <div th:if="${!isCurrentUser}" style="margin-bottom: 20px;">
-        <!-- Если уже друг -->
         <form th:if="${isFriend}" th:action="@{'/remove/' + ${player.id}}" method="post">
             <button type="submit"
                     style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 5px;">
                 Удалить из друзей
             </button>
         </form>
-
-        <!-- Если не друг -->
         <form th:unless="${isFriend}" th:action="@{'/add/' + ${player.id}}" method="post">
             <button type="submit"
                     style="padding: 8px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px;">
@@ -124,9 +105,6 @@
             </button>
         </form>
     </div>
-
-
 </div>
-
 </body>
 </html>

@@ -20,30 +20,34 @@
 <div th:replace="fragments/navbar :: navbar(${name})"></div>
 <div class="container">
     <h1>Регистрация</h1>
-    <form th:action="@{/register}" th:object="${player}" method="post">
-        <label>Имя:
-            <input type="text" th:field="*{name}" />
-        </label>
-        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        <form th:action="@{/register}" th:object="${player}" method="post">
+            <label>Имя:
+                <input type="text" th:field="*{name}" />
+            </label>
+            <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
 
-        <label>Email:
-            <input type="email" th:field="*{email}" />
-        </label>
-        <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            <label>Email:
+                <input type="email" th:field="*{email}" />
+            </label>
+            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
 
-        <label>Пароль:
-            <input type="password" th:field="*{password}" />
-        </label>
-        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            <label>Пароль:
+                <input type="password" th:field="*{password}" />
+            </label>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
 
-        <label>Дата рождения:
-            <input type="date" th:field="*{birthday}" style="margin-bottom: 20px;" />
-        </label>
-        <div class="error" th:if="${#fields.hasErrors('birthday')}" th:errors="*{birthday}"></div>
+            <label>Дата рождения:
+                <input type="date" th:field="*{birthday}" style="margin-bottom: 20px;" />
+            </label>
+            <div class="error" th:if="${#fields.hasErrors('birthday')}" th:errors="*{birthday}"></div>
 
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-    <p>Уже есть аккаунт? <a th:href="@{/login}">Войдите здесь</a></p>
+            <label>Telegram:
+                <input type="text" th:field="*{tgLink}" placeholder="https://t.me/username" />
+            </label>
+
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <p>Уже есть аккаунт? <a th:href="@{/login}">Войдите здесь</a></p>
 </div>
 </body>
 </html>

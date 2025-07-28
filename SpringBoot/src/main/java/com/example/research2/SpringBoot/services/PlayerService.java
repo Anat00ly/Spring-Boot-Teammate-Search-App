@@ -46,6 +46,7 @@ public class PlayerService {
         currentPlayer.setTimezone(player.getTimezone());
         currentPlayer.setLanguages(player.getLanguages());
         currentPlayer.setGames(player.getGames());
+        currentPlayer.setTgLink(player.getTgLink());
         playerRepo.save(currentPlayer);
 
     }

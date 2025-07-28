@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Главная страница</title>
+    <title th:text="${post.title}">Название поста</title>
     <meta charset="UTF-8">
     <style>
-        .post {
+        .post-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
             border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
         }
-        .post a {
+        .post-container a {
             text-decoration: none;
             color: #007bff;
         }
-        .post a:hover {
+        .post-container a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<h1>Найди тиммейта!</h1>
-<div th:each="post : ${posts}" class="post">
-    <h3><a th:href="@{/post/{id}(id=${post.id})}" th:text="${post.title}">Название поста</a></h3>
+<div class="post-container">
+    <h1 th:text="${post.title}">Название поста</h1>
     <p>Автор: <a th:href="@{/profile/{id}(id=${post.player.id})}" th:text="${post.player.name}">Имя пользователя</a></p>
     <p>Игра: <span th:text="${post.game}"></span></p>
+    <p>Описание: <span th:text="${post.description}"></span></p>
+    <p>Уровень: <span th:text="${post.quantityOfHours}"></span></p>
     <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+    <a th:href="@{/}">Вернуться на главную</a>
 </div>
 </body>
 </html>

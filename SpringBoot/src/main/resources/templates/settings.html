@@ -3,22 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Настройки профиля</title>
-
-    <!-- Подключаем стили Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <!-- Немного стилей для контейнера -->
     <style>
         .container {
             max-width: 600px;
             margin: 0 auto;
         }
-
         label {
             display: block;
             margin-top: 15px;
         }
-
         select, input {
             width: 100%;
             padding: 5px;
@@ -30,17 +24,13 @@
 
 <div class="container">
     <h1>Настройки профиля</h1>
-
     <form th:action="@{/settings}" th:object="${player}" method="post">
-
         <input type="hidden" th:field="*{id}" />
-
         <div>
             <label>Имя:
                 <input type="text" th:field="*{name}" />
             </label>
         </div>
-
         <div>
             <label>Дата рождения:
                 <input type="date"
@@ -49,7 +39,6 @@
                        class="form-control" />
             </label>
         </div>
-
         <div>
             <label>Пол:
                 <select th:field="*{gender}">
@@ -59,7 +48,6 @@
                 </select>
             </label>
         </div>
-
         <div>
             <label>Страна:
                 <select th:field="*{country}">
@@ -67,7 +55,6 @@
                 </select>
             </label>
         </div>
-
         <div>
             <label>Часовой пояс:
                 <select th:field="*{timezone}">
@@ -75,7 +62,6 @@
                 </select>
             </label>
         </div>
-
         <div>
             <label>Владение языками:
                 <select th:field="*{languages}">
@@ -90,19 +76,19 @@
                 </select>
             </label>
         </div>
-
+        <div>
+            <label>Telegram:
+                <input type="text" th:field="*{tgLink}" placeholder="https://t.me/username" />
+            </label>
+        </div>
         <div style="margin-top: 20px;">
             <button type="submit">Сохранить изменения</button>
         </div>
     </form>
 </div>
 
-<!-- Подключаем jQuery (нужен для Select2) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Подключаем JS Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- Инициализация Select2 -->
 <script>
     $(document).ready(function () {
         $('.language-select').select2({
@@ -113,7 +99,5 @@
         });
     });
 </script>
-
-
 </body>
 </html>

@@ -13,6 +13,9 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 20)
+    private String title;
+
     @ManyToOne
     @JoinColumn(name = "player_id", nullable = false)
     private Player player;
@@ -41,6 +44,14 @@ public class Post {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Player getPlayer() {

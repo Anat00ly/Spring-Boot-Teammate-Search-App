@@ -32,6 +32,8 @@ public class Player {
 
     private String games;
 
+    private String tgLink;
+
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Friendship> sentFriendRequest;
 
@@ -116,6 +118,14 @@ public class Player {
 
     public void setTimezone(String timezone) {
         this.timezone = timezone;
+    }
+
+    public String getTgLink() {
+        return tgLink;
+    }
+
+    public void setTgLink(String tgLink) {
+        this.tgLink = tgLink;
     }
 
     public List<Friendship> getSentFriendRequest() {
