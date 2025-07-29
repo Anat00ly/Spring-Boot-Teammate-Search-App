@@ -5,39 +5,48 @@
   <meta charset="UTF-8">
   <style>
     .form-container {
-      margin: 20px 0;
-      padding: 10px;
-      border: 1px solid #ddd;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-container label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .form-container input, .form-container textarea, .form-container select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    .error {
+      color: red;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<h1>Создать новый пост</h1>
 <div class="form-container">
-  <form th:object="${newPost}" th:action="@{/post}" method="post">
-    <div>
-      <label>Название:</label>
-      <input type="text" th:field="*{title}" required />
-    </div>
-    <div>
-      <label>Игра:</label>
-      <select th:field="*{game}" required>
-        <option value="">Выберите игру</option>
-        <option th:each="game : ${game}" th:value="${game}" th:text="${game}"></option>
-      </select>
-    </div>
-    <div>
-      <label>Описание:</label>
-      <textarea th:field="*{description}" required></textarea>
-    </div>
-    <div>
-      <label>Количество часов:</label>
-      <input type="number" th:field="*{quantityOfHours}" min="0" required/>
-    </div>
-    <button type="submit">Опубликовать</button>
+  <h1>Создать пост</h1>
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+  <form th:action="@{/post}" th:object="${newPost}" method="post">
+    <label for="title">Название:</label>
+    <input type="text" id="title" th:field="*{title}" required />
+
+    <label for="game">Игра:</label>
+    <select id="game" th:field="*{game}" required>
+      <option th:each="game : ${games}" th:value="${game}" th:text="${game}"></option>
+    </select>
+
+    <label for="description">Описание:</label>
+    <textarea id="description" th:field="*{description}" rows="5"></textarea>
+
+    <label for="quantityOfHours">Количество часов:</label>
+    <input type="number" id="quantityOfHours" th:field="*{quantityOfHours}" required />
+
+    <button type="submit">Создать</button>
+    <a th:href="@{/}">Отмена</a>
   </form>
 </div>
-<a th:href="@{/}">Вернуться на главную</a>
 </body>
 </html>

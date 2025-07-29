@@ -4,28 +4,43 @@
     <title>Главная страница</title>
     <meta charset="UTF-8">
     <style>
-        .post {
+        .post-list {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .post-item {
             border: 1px solid #ccc;
             padding: 10px;
-            margin: 10px 0;
+            margin-bottom: 10px;
         }
-        .post a {
+        .post-item a {
             text-decoration: none;
             color: #007bff;
         }
-        .post a:hover {
+        .post-item a:hover {
             text-decoration: underline;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .create-post-link {
+            display: inline-block;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<h1>Найди тиммейта!</h1>
-<div th:each="post : ${posts}" class="post">
-    <h3><a th:href="@{/post/{id}(id=${post.id})}" th:text="${post.title}">Название поста</a></h3>
-    <p>Автор: <a th:href="@{/profile/{id}(id=${post.player.id})}" th:text="${post.player.name}">Имя пользователя</a></p>
-    <p>Игра: <span th:text="${post.game}"></span></p>
-    <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+<div class="post-list">
+    <h1>Список постов</h1>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <div th:each="post : ${posts}" class="post-item">
+        <p th:text="${post.description ?: 'Без описания'}">Описание поста</p>
+        <a th:href="@{/post/{id}(id=${post.id})}">Подробнее</a>
+    </div>
+
 </div>
 </body>
 </html>

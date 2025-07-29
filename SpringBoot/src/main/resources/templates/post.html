@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${post.title}">Название поста</title>
+    <title th:text="${post?.title} ?: 'Пост'">Название поста</title>
     <meta charset="UTF-8">
     <style>
         .post-container {
@@ -17,17 +17,37 @@
         .post-container a:hover {
             text-decoration: underline;
         }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .post-actions {
+            margin-top: 10px;
+        }
+        .post-actions a, .post-actions form {
+            display: inline;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
 <div class="post-container">
-    <h1 th:text="${post.title}">Название поста</h1>
-    <p>Автор: <a th:href="@{/profile/{id}(id=${post.player.id})}" th:text="${post.player.name}">Имя пользователя</a></p>
-    <p>Игра: <span th:text="${post.game}"></span></p>
-    <p>Описание: <span th:text="${post.description}"></span></p>
-    <p>Уровень: <span th:text="${post.quantityOfHours}"></span></p>
-    <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <div th:unless="${error}">
+        <h1 th:text="${post.title}">Название поста</h1>
+        <p>Автор: <a th:href="@{/profile/{id}(id=${post.player.id})}" th:text="${post.player.name}">Имя пользователя</a></p>
+        <p>Игра: <span th:text="${post.game}"></span></p>
+        <p>Описание: <span th:text="${post.description ?: 'Без описания'}"></span></p>
+        <p>Уровень: <span th:text="${post.quantityOfHours}"></span></p>
+        <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+        <div class="post-actions" th:if="${currentUserId != null and post.player.id == currentUserId}">
+            <a th:href="@{/edit-post/{id}(id=${post.id})}">Редактировать</a>
+            <form th:action="@{/delete-post/{id}(id=${post.id})}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
+                <button type="submit">Удалить</button>
+            </form>
+        </div>
+    </div>
     <a th:href="@{/}">Вернуться на главную</a>
 </div>
 </body>

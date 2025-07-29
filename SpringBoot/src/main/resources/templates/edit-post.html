@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактировать пост</title>
+    <meta charset="UTF-8">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .form-container input, .form-container textarea, .form-container select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
+<div class="form-container">
+    <h1>Редактировать пост</h1>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <form th:action="@{/edit-post/{id}(id=${post.id})}" th:object="${post}" method="post">
+        <label for="title">Название:</label>
+        <input type="text" id="title" th:field="*{title}" required />
+
+        <label for="game">Игра:</label>
+        <select id="game" th:field="*{game}" required>
+            <option th:each="game : ${games}" th:value="${game}" th:text="${game}"></option>
+        </select>
+
+        <label for="description">Описание:</label>
+        <textarea id="description" th:field="*{description}" rows="5"></textarea>
+
+        <label for="quantityOfHours">Количество часов:</label>
+        <input type="number" id="quantityOfHours" th:field="*{quantityOfHours}" required />
+
+        <button type="submit">Сохранить</button>
+        <a th:href="@{/post/{id}(id=${post.id})}">Отмена</a>
+    </form>
+</div>
+</body>
+</html>
