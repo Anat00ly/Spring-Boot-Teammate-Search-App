@@ -1,110 +1,235 @@
+
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Профиль</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .profile-container {
-            max-width: 800px;
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --bg-tertiary: #3a3a3c;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --text-muted: #8e8e93;
+            --accent-blue: #007aff;
+            --accent-red: #ff3b30;
+            --accent-green: #34c759;
+            --border-color: #48484a;
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+        }
+
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        .profile-header {
-            margin-bottom: 30px;
-        }
-        .profile-nav {
+            padding: 1rem 2rem;
             display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
         }
-        .profile-nav a {
-            padding: 10px 15px;
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
-            color: #333;
-            border: 1px solid transparent;
+            font-weight: 400;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-item:last-child {
             border-bottom: none;
-            margin-right: 5px;
         }
-        .profile-nav a.active {
-            border-color: #ddd;
-            border-bottom-color: #fff;
-            background: #fff;
-            color: #007bff;
+
+        .profile-label {
+            font-weight: 600;
+            color: var(--text-secondary);
         }
-        .profile-nav a:hover {
-            background: #f8f9fa;
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
         }
-        .profile-info {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 5px;
+
+        a:hover {
+            opacity: 0.8;
         }
-        .profile-info p {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+
+        .button {
+            display: inline-block;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
         }
-        .profile-info p:last-child {
-            border-bottom: none;
+
+        .btn-green {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-red {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-link {
+            color: var(--accent-blue);
+            font-weight: 500;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 0.3rem;
+        }
+
+        .tab-link:hover {
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .active-tab {
+            border-bottom: 2px solid var(--accent-blue);
         }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar(${player.email})}"></div>
-<div class="profile-container">
-    <div class="profile-header">
-        <h1>Профиль пользователя: <span th:text="${player.name}"></span></h1>
-    </div>
-    <div class="profile-nav">
-        <a href="#" class="active">Профиль</a>
-        <a th:if="${player.id == currentUserId}" th:href="@{/settings}">Настройки</a>
-        <a th:if="${player.id == currentUserId}" th:href="@{/profile/friendList}">Друзья</a>
-        <a th:if="${player.id == currentUserId}" th:href="@{/create-post}">Создать пост</a>
-    </div>
-    <div class="profile-content">
-        <div class="profile-info">
-            <p><strong>Имя:</strong> <span th:text="${player.name}"></span></p>
-            <p><strong>Email:</strong> <span th:text="${player.email}"></span></p>
-            <p><strong>Дата рождения:</strong>
-                <span th:text="${player.birthday != null ? #temporals.format(player.birthday, 'dd.MM.yyyy') : 'Не указана'}"></span>
-            </p>
-            <p><strong>Пол:</strong>
-                <span th:text="${player.gender != null ? player.gender : 'Не указан'}"></span>
-            </p>
-            <p><strong>Страна:</strong>
-                <span th:text="${player.country != null ? player.country : 'Не указана'}"></span>
-            </p>
-            <p><strong>Часовой пояс:</strong>
-                <span th:text="${player.timezone != null ? player.timezone : 'Не указан'}"></span>
-            </p>
-            <p><strong>Языки:</strong>
-                <span th:text="${player.languages != null ? player.languages : 'Не указан'}"></span>
-            </p>
-            <p><strong>Игры:</strong>
-                <span th:text="${player.games != null ? player.games : 'Не указан'}"></span>
-            </p>
-            <p><strong>Telegram:</strong>
-                <span th:if="${player.tgLink != null}">
-                    <a th:href="${player.tgLink}" th:text="${player.tgLink}" target="_blank"></a>
-                </span>
-                <span th:unless="${player.tgLink != null}">Не указан</span>
-            </p>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+        <div class="nav-right" th:if="${player != null}">
+            <a th:href="@{/notifications}" class="nav-link"><i class="fas fa-bell"></i> Уведомления</a>
+            <a th:href="@{/profile}" class="nav-link"><i class="fas fa-user"></i> Профиль</a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+            </form>
+        </div>
+        <div class="nav-right" th:unless="${player != null}">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
         </div>
     </div>
-    <div th:if="${!isCurrentUser}" style="margin-bottom: 20px;">
+</nav>
+
+<div class="container">
+    <h1>Профиль пользователя: <span th:text="${player.name}"></span></h1>
+
+    <div class="tabs">
+        <a href="#" class="tab-link active-tab">Профиль</a>
+        <a th:if="${player.id == currentUserId}" th:href="@{/settings}" class="tab-link">Настройки</a>
+        <a th:if="${player.id == currentUserId}" th:href="@{/profile/friendList}" class="tab-link">Друзья</a>
+        <a th:if="${player.id == currentUserId}" th:href="@{/create-post}" class="tab-link">Создать пост</a>
+    </div>
+
+    <div class="profile-item"><span class="profile-label">Имя:</span> <span th:text="${player.name}"></span></div>
+    <div class="profile-item"><span class="profile-label">Email:</span> <span th:text="${player.email}"></span></div>
+    <div class="profile-item"><span class="profile-label">Дата рождения:</span> <span th:text="${player.birthday != null ? #temporals.format(player.birthday, 'dd.MM.yyyy') : 'Не указана'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Пол:</span> <span th:text="${player.gender != null ? player.gender : 'Не указан'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Страна:</span> <span th:text="${player.country != null ? player.country : 'Не указана'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Часовой пояс:</span> <span th:text="${player.timezone != null ? player.timezone : 'Не указан'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Языки:</span> <span th:text="${player.languages != null ? player.languages : 'Не указан'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Игры:</span> <span th:text="${player.games != null ? player.games : 'Не указан'}"></span></div>
+    <div class="profile-item"><span class="profile-label">Telegram:</span>
+        <span th:if="${player.tgLink != null}"><a th:href="${player.tgLink}" th:text="${player.tgLink}" target="_blank"></a></span>
+        <span th:unless="${player.tgLink != null}">Не указан</span>
+    </div>
+
+    <div th:if="${!isCurrentUser}" style="margin-top: 2rem;">
         <form th:if="${isFriend}" th:action="@{'/remove/' + ${player.id}}" method="post">
-            <button type="submit"
-                    style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 5px;">
-                Удалить из друзей
-            </button>
+            <button type="submit" class="button btn-red">Удалить из друзей</button>
         </form>
         <form th:unless="${isFriend}" th:action="@{'/add/' + ${player.id}}" method="post">
-            <button type="submit"
-                    style="padding: 8px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px;">
-                Добавить в друзья
-            </button>
+            <button type="submit" class="button btn-green">Добавить в друзья</button>
         </form>
     </div>
 </div>
+
 </body>
 </html>

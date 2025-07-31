@@ -2,52 +2,497 @@
 <head>
     <title>Регистрация</title>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .container {
-            max-width: 500px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --bg-tertiary: #3a3a3c;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --text-muted: #8e8e93;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+            --border-color: #48484a;
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        label, input {
-            display: block;
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 400;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .register-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
             width: 100%;
-            margin-top: 10px;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        .error { color: red; }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .register-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .register-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            background: var(--bg-primary);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 1rem;
+        }
+
+        .form-button:hover {
+            opacity: 0.9;
+        }
+
+        .form-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: var(--accent-red);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .form-group.has-error .form-input {
+            border-color: var(--accent-red);
+        }
+
+        /* Footer Link */
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .auth-footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .auth-footer-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Input Icons */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper .form-input {
+            padding-left: 2.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-left, .nav-right {
+                gap: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .register-container {
+                padding: 2rem;
+            }
+
+            .register-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-right {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .register-container {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-<div th:replace="fragments/navbar :: navbar(${name})"></div>
-<div class="container">
-    <h1>Регистрация</h1>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+
+        <div class="nav-right">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="register-container">
+        <div class="register-header">
+            <h1 class="register-title">
+                <i class="fas fa-user-plus" style="color: var(--accent-purple); margin-right: 0.5rem;"></i>
+                Регистрация
+            </h1>
+            <p class="register-subtitle">Создайте аккаунт для поиска товарищей по команде</p>
+        </div>
+
+        <!-- Registration Form -->
         <form th:action="@{/register}" th:object="${player}" method="post">
-            <label>Имя:
-                <input type="text" th:field="*{name}" />
-            </label>
-            <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+            <div class="form-group" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                <label class="form-label" for="name">
+                    <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
+                    Имя
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text"
+                           id="name"
+                           th:field="*{name}"
+                           class="form-input"
+                           placeholder="Ваше имя" />
+                </div>
+                <div class="error-message" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Ошибка имени</span>
+                </div>
+            </div>
 
-            <label>Email:
-                <input type="email" th:field="*{email}" />
-            </label>
-            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            <div class="form-group" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
+                    Email
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email"
+                           id="email"
+                           th:field="*{email}"
+                           class="form-input"
+                           placeholder="example@email.com" />
+                </div>
+                <div class="error-message" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Ошибка email</span>
+                </div>
+            </div>
 
-            <label>Пароль:
-                <input type="password" th:field="*{password}" />
-            </label>
-            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            <div class="form-group" th:classappend="${#fields.hasErrors('password')} ? 'has-error'">
+                <label class="form-label" for="password">
+                    <i class="fas fa-lock" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
+                    Пароль
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password"
+                           id="password"
+                           th:field="*{password}"
+                           class="form-input"
+                           placeholder="Создайте пароль" />
+                </div>
+                <div class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Ошибка пароля</span>
+                </div>
+            </div>
 
-            <label>Дата рождения:
-                <input type="date" th:field="*{birthday}" style="margin-bottom: 20px;" />
-            </label>
-            <div class="error" th:if="${#fields.hasErrors('birthday')}" th:errors="*{birthday}"></div>
+            <div class="form-group" th:classappend="${#fields.hasErrors('birthday')} ? 'has-error'">
+                <label class="form-label" for="birthday">
+                    <i class="fas fa-calendar" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
+                    Дата рождения
+                </label>
+                <div class="input-wrapper">
+                    <i class="fas fa-calendar input-icon"></i>
+                    <input type="date"
+                           id="birthday"
+                           th:field="*{birthday}"
+                           class="form-input" />
+                </div>
+                <div class="error-message" th:if="${#fields.hasErrors('birthday')}" th:errors="*{birthday}">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Ошибка даты рождения</span>
+                </div>
+            </div>
 
-            <label>Telegram:
-                <input type="text" th:field="*{tgLink}" placeholder="https://t.me/username" />
-            </label>
+            <div class="form-group">
+                <label class="form-label" for="tgLink">
+                    <i class="fab fa-telegram" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
+                    Telegram (необязательно)
+                </label>
+                <div class="input-wrapper">
+                    <i class="fab fa-telegram input-icon"></i>
+                    <input type="text"
+                           id="tgLink"
+                           th:field="*{tgLink}"
+                           class="form-input"
+                           placeholder="https://t.me/username" />
+                </div>
+            </div>
 
-            <button type="submit">Зарегистрироваться</button>
+            <button type="submit" class="form-button">
+                <i class="fas fa-user-plus"></i>
+                Зарегистрироваться
+            </button>
         </form>
-        <p>Уже есть аккаунт? <a th:href="@{/login}">Войдите здесь</a></p>
-</div>
-</body>
-</html>
+
+        <div class="auth-footer">
+            <p class="auth-footer-text">
+                Уже есть аккаунт?
+                <a th:href="@{/login}" class="auth-footer-link">Войдите здесь</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Простая анимация появления формы
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('.register-container');
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            container.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+        }, 100);
+    });
+
+    // Обработка фокуса на полях ввода
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('focus', function() {
+            const wrapper = this.closest('.input-wrapper') || this.parentElement;
+            wrapper.style.transform = 'scale(1.02)';
+
+            const icon = wrapper.querySelector('.input-icon');
+            if (icon) {
+                icon.style.color = 'var(--accent-purple)';
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            const wrapper = this.closest('.input-wrapper') || this.parentElement;
+            wrapper.style.transform = 'scale(1)';
+
+            const icon = wrapper.querySelector('.input-icon');
+            if (icon) {
+                icon.style.color = 'var(--text-muted)';
+            }
+        });
+    });
+
+    // Анимация кнопки при отправке
+    document.querySelector('form').addEventListener('submit', function() {
+        const button = this.querySelector('.form-button');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
+        button.disabled = true;
+    });
+
+    // Валидация email в реальном времени
+    document.getElementById('email').addEventListener('input', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = emailRegex.test(this.value);
+        const formGroup = this.closest('.form-group');
+
+        if (this.value && !isValid) {
+            formGroup.classList.add('has-error');
+            const errorMessage = formGroup.querySelector('.error-message') || document.createElement('div');
+            if (!formGroup.querySelector('.error-message')) {
+                errorMessage.className = 'error-message';
+                errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> <span>Некорректный email</span>';
+                formGroup.appendChild(errorMessage);
+            }
+        } else {
+            formGroup.classList.remove('has-error');
+            const errorMessage = formGroup.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        }
+    });
+</script>

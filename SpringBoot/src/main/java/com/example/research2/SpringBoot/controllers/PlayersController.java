@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -55,20 +56,27 @@ public class PlayersController {
     @GetMapping("/profile/{id}")
     public String viewPlayerPage(@PathVariable Long id, Model model, Principal principal) {
         Player viewedPlayer = playerService.findPlayerById(id);
+        if (viewedPlayer == null) {
+            return "redirect:/players"; // Перенаправление, если игрок не найден
+        }
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
+        if (currentPlayer == null) {
+            return "redirect:/login"; // Перенаправление, если текущий пользователь не найден
+        }
 
         model.addAttribute("player", viewedPlayer);
         model.addAttribute("currentUserId", currentPlayer.getId());
 
-        // Проверка: ты смотришь не на свой профиль
         boolean isCurrentUser = viewedPlayer.getId().equals(currentPlayer.getId());
         model.addAttribute("isCurrentUser", isCurrentUser);
 
-        // Проверка: ты друг
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
-        // Если друзья — добавь id Friendship
+        // Добавить список друзей игрока
+        List<Player> friends = friendshipService.getFriends(viewedPlayer);
+        model.addAttribute("friends", friends != null ? friends : new ArrayList<>());
+
         if (isFriend) {
             friendshipService.findFriendshipBetween(currentPlayer.getId(), viewedPlayer.getId())
                     .ifPresent(friendship -> model.addAttribute("friendshipId", friendship.getId()));

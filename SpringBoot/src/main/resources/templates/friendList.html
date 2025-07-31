@@ -1,24 +1,171 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Мои друзья</title>
+    <title>Ваши друзья</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --bg-tertiary: #3a3a3c;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #007aff;
+            --border-color: #48484a;
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 400;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .friend-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .friend-link {
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .friend-link:hover {
+            opacity: 0.8;
+        }
+
+        .error-box {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .text-muted {
+            color: var(--text-secondary);
+        }
+    </style>
 </head>
 <body>
-<div th:replace="fragments/navbar :: navbar(${player.   name})"></div>
 
-<h2>Ваши друзья</h2>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+        <div class="nav-right" th:if="${name}">
+            <a th:href="@{/notifications}" class="nav-link"><i class="fas fa-bell"></i> Уведомления</a>
+            <a th:href="@{/profile}" class="nav-link"><i class="fas fa-user"></i> Профиль</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+            </form>
+        </div>
+        <div class="nav-right" th:unless="${name}">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+        </div>
+    </div>
+</nav>
 
-<div th:if="${#lists.isEmpty(friends)}">
-    <p>У вас пока нет друзей.</p>
+<div class="container">
+    <h1>Ваши друзья</h1>
+
+    <div th:if="${error}" class="error-box" th:text="${error}"></div>
+
+    <div th:unless="${friends}">
+        <p class="text-muted">У вас пока нет друзей.</p>
+    </div>
+
+    <div th:if="${friends}" class="space-y-4">
+        <div th:each="friend : ${friends}" class="friend-card">
+            <a th:href="@{/profile/{id}(id=${friend.id})}" class="friend-link">
+                <i class="fas fa-user mr-1"></i> <span th:text="${friend.name}">Имя друга</span>
+            </a>
+            <a th:href="@{/profile/{id}(id=${friend.id})}" class="friend-link">
+                <i class="fas fa-eye mr-1"></i> Посмотреть профиль
+            </a>
+        </div>
+    </div>
 </div>
-
-<ul th:each="friend : ${friends}">
-    <li>
-        <span th:text="${friend.name}">Имя друга</span>
-        <a th:href="@{/profile/{id}(id=${friend.id})}">Посмотреть профиль</a>
-    </li>
-</ul>
 
 </body>
 </html>

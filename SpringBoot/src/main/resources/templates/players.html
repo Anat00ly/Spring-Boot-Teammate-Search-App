@@ -1,42 +1,155 @@
-<html xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Список игроков</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
-        .container {
-            max-width: 800px;
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --accent-purple: #8b5cf6;
+            --border-color: #48484a;
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 400;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .player-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.25rem;
+        }
+
+        .player-link {
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .player-link:hover {
+            opacity: 0.8;
+        }
+
+        .error-box {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+        <div class="nav-right" th:if="${name}">
+            <a th:href="@{/notifications}" class="nav-link"><i class="fas fa-bell"></i> Уведомления</a>
+            <a th:href="@{/profile}" class="nav-link"><i class="fas fa-user"></i> Профиль</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+            </form>
+        </div>
+        <div class="nav-right" th:unless="${name}">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
 <div class="container">
     <h1>Список игроков</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>Имя</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="player : ${players}">
-            <td>
-                <a th:href="@{/profile/{id}(id=${player.id})}" th:text="${player.name}">Имя</a>
-            </td>
 
-        </tr>
-        </tbody>
-    </table>
+    <div th:if="${error}" class="error-box" th:text="${error}"></div>
+
+    <div class="space-y-4">
+        <div th:each="player : ${players}" class="player-card">
+            <a th:href="@{/profile/{id}(id=${player.id})}" class="player-link">
+                <i class="fas fa-user mr-1"></i> <span th:text="${player.name}">Имя</span>
+            </a>
+        </div>
+    </div>
 </div>
+
 </body>
 </html>

@@ -3,44 +3,513 @@
 <head>
     <title>Главная страница</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .post-list {
-            max-width: 800px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --bg-tertiary: #3a3a3c;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --text-muted: #8e8e93;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #007aff;
+            --border-color: #48484a;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .post-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
         }
-        .post-item a {
+
+        .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
-            color: #007bff;
+            font-weight: 400;
+            transition: var(--transition);
+            padding: 0.5rem 0;
         }
-        .post-item a:hover {
-            text-decoration: underline;
+
+        .nav-link:hover {
+            color: var(--text-primary);
         }
-        .error {
-            color: red;
-            margin: 10px 0;
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .create-post-link {
-            display: inline-block;
-            margin-top: 10px;
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .create-post-section {
+            margin-bottom: 2rem;
+        }
+
+        /* Post List */
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .post-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .post-item:hover {
+            border-color: var(--text-muted);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .post-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .post-game {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .post-author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .post-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 1rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .post-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .post-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Game Icons Mapping */
+        .game-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #ff3b30;
+            color: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-left, .nav-right {
+                gap: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .post-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            .post-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-right {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<div class="post-list">
-    <h1>Список постов</h1>
-    <div th:if="${error}" class="error" th:text="${error}"></div>
-    <div th:each="post : ${posts}" class="post-item">
-        <p th:text="${post.description ?: 'Без описания'}">Описание поста</p>
-        <a th:href="@{/post/{id}(id=${post.id})}">Подробнее</a>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+
+        <!-- Если пользователь вошёл -->
+        <div class="nav-right" th:if="${name}">
+            <a th:href="@{/notifications}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                Уведомления
+            </a>
+            <a th:href="@{/profile}" class="nav-link">
+                <i class="fas fa-user"></i>
+                Профиль
+            </a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+            </form>
+        </div>
+
+        <!-- Если пользователь не вошёл -->
+        <div class="nav-right" th:unless="${name}">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-container">
+    <h1 class="page-title">Список постов</h1>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- Create Post Button -->
+    <div class="create-post-section" th:if="${name}">
+        <a th:href="@{/create-post}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Создать пост
+        </a>
     </div>
 
-</div>
+    <!-- Posts List -->
+    <div ${posts != null and !posts.isEmpty()} class="post-list">
+        <article th:each="post : ${posts}" class="post-item">
+            <div class="post-header">
+                <div>
+                    <h3 class="post-title" th:text="${post.title}">Название поста</h3>
+                    <div class="post-game">
+                        <i th:class="${'fas fa-gamepad'}"></i>
+                        <span th:text="${post.game}">Игра</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-meta">
+                <div class="post-author">
+                    <div class="post-author-avatar" th:text="${post.player.name != null ? post.player.name.substring(0,1).toUpperCase() : 'U'}">U</div>
+                    <span th:text="${post.player.name ?: 'Игрок'}">Имя игрока</span>
+                </div>
+                <div class="post-stat">
+                    <i class="fas fa-clock"></i>
+                    <span th:text="${post.quantityOfHours} + ' ч'">0 ч</span>
+                </div>
+                <div class="post-stat">
+                    <i class="fas fa-calendar"></i>
+                    <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy')}">Дата</span>
+                </div>
+            </div>
+
+            <p class="post-description" th:text="${post.description ?: 'Без описания'}">
+                Описание поста
+            </p>
+
+            <div class="post-footer">
+                <div class="post-stats">
+                    <!-- Дополнительные статистики можно добавить здесь -->
+                </div>
+                <a th:href="@{/post/{id}(id=${post.id})}" class="post-link">
+                    Подробнее
+                </a>
+            </div>
+        </article>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${posts == null or posts.isEmpty()}" class="empty-state">
+        <i class="fas fa-gamepad"></i>
+        <h3>Пока нет постов</h3>
+        <p>Станьте первым, кто создаст пост для поиска товарищей по команде!</p>
+        <a th:href="@{/create-post}" class="btn btn-primary" th:if="${name}" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i>
+            Создать первый пост
+        </a>
+    </div>
+</main>
+
+<script>
+    // Функция для получения иконки игры
+    function getGameIcon(gameName) {
+        const gameIcons = {
+            'Counter-Strike 2': 'fas fa-crosshairs',
+            'Counter-Strike: Global Offensive': 'fas fa-crosshairs',
+            'Dota 2': 'fas fa-shield-alt',
+            'League of Legends': 'fas fa-crown',
+            'Valorant': 'fas fa-bullseye',
+            'Apex Legends': 'fas fa-mountain',
+            'Fortnite': 'fas fa-hammer',
+            'Minecraft': 'fas fa-cube',
+            'Grand Theft Auto V': 'fas fa-car',
+            'GTA V RP': 'fas fa-car',
+            'World of Warcraft': 'fas fa-dragon',
+            'Overwatch': 'fas fa-bolt',
+            'Rocket League': 'fas fa-futbol',
+            'PUBG: Battlegrounds': 'fas fa-parachute-box',
+            'PUBG Mobile': 'fas fa-mobile-alt',
+            'Call of Duty': 'fas fa-crosshairs',
+            'Destiny 2': 'fas fa-space-shuttle',
+            'Genshin Impact': 'fas fa-magic',
+            'Among Us': 'fas fa-user-secret',
+            'Fall Guys': 'fas fa-running',
+            'Dead by Daylight': 'fas fa-skull',
+            'Rust': 'fas fa-hammer',
+            'ARK: Survival Evolved': 'fas fa-dragon',
+            'ARK: Survival Ascended': 'fas fa-dragon',
+            'The Forest': 'fas fa-tree',
+            'Phasmophobia': 'fas fa-ghost',
+            'Garry\'s Mod': 'fas fa-wrench',
+            'Team Fortress 2': 'fas fa-bomb',
+            'Left 4 Dead 2': 'fas fa-zombie',
+            'Portal 2': 'fas fa-circle',
+            'Half-Life': 'fas fa-atom',
+            'Terraria': 'fas fa-pickaxe',
+            'Stardew Valley': 'fas fa-seedling',
+            'Don\'t Starve Together': 'fas fa-campfire',
+            'Sea of Thieves': 'fas fa-ship',
+            'War Thunder': 'fas fa-plane',
+            'World of Tanks': 'fas fa-tank',
+            'Euro Truck Simulator 2': 'fas fa-truck',
+            'Cities: Skylines': 'fas fa-city',
+            'Civilization VI': 'fas fa-globe',
+            'Age of Empires': 'fas fa-castle',
+            'StarCraft II': 'fas fa-rocket',
+            'Hearthstone': 'fas fa-cards',
+            'Magic: The Gathering': 'fas fa-hat-wizard',
+            'Chess.com': 'fas fa-chess',
+            'Roblox': 'fas fa-cubes',
+            'Fall Guys': 'fas fa-crown',
+            'Brawl Stars': 'fas fa-star',
+            'Mobile Legends: Bang Bang': 'fas fa-mobile-alt',
+            'Free Fire': 'fas fa-fire',
+            'Clash of Clans': 'fas fa-shield',
+            'Clash Royale': 'fas fa-crown',
+            'Pokemon GO': 'fas fa-map-marker-alt',
+            'Candy Crush': 'fas fa-candy-cane'
+        };
+
+        return gameIcons[gameName] || 'fas fa-gamepad';
+    }
+
+    // Применяем иконки к играм после загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.post-game i').forEach(icon => {
+            const gameText = icon.nextElementSibling.textContent;
+            const gameIcon = getGameIcon(gameText);
+            icon.className = gameIcon;
+        });
+    });
+
+    // Плавная анимация появления постов
+    document.addEventListener('DOMContentLoaded', function() {
+        const posts = document.querySelectorAll('.post-item');
+        posts.forEach((post, index) => {
+            post.style.opacity = '0';
+            post.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                post.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                post.style.opacity = '1';
+                post.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
 </body>
 </html>

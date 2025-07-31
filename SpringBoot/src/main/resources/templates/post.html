@@ -3,52 +3,638 @@
 <head>
     <title th:text="${post?.title} ?: 'Пост'">Название поста</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .post-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --bg-tertiary: #3a3a3c;
+            --text-primary: #ffffff;
+            --text-secondary: #adadb3;
+            --text-muted: #8e8e93;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+            --accent-orange: #ff9500;
+            --border-color: #48484a;
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 400;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
+            padding: 2rem;
+            width: 100%;
         }
-        .post-container a {
+
+        /* Back Button */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
             text-decoration: none;
-            color: #007bff;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 0;
+            transition: var(--transition);
         }
-        .post-container a:hover {
-            text-decoration: underline;
+
+        .back-button:hover {
+            color: var(--accent-blue);
+            transform: translateX(-2px);
         }
-        .error {
-            color: red;
-            margin: 10px 0;
+
+        /* Post Container */
+        .post-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
+
+        /* Post Header */
+        .post-header {
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .post-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .post-game {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-purple);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Post Meta */
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-icon {
+            color: var(--text-muted);
+        }
+
+        /* Author Info */
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.5rem 2rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .author-details {
+            flex-grow: 1;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .author-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .author-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Post Content */
+        .post-content {
+            padding: 2rem;
+        }
+
+        .post-description {
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+
+        .empty-description {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Post Actions */
         .post-actions {
-            margin-top: 10px;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-        .post-actions a, .post-actions form {
-            display: inline;
-            margin-right: 10px;
+
+        .action-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .action-edit {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .action-edit:hover {
+            opacity: 0.9;
+        }
+
+        .action-delete {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .action-delete:hover {
+            opacity: 0.9;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .post-header {
+                padding: 1.5rem;
+            }
+
+            .post-title {
+                font-size: 1.5rem;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .author-info {
+                padding: 1rem 1.5rem;
+            }
+
+            .post-content {
+                padding: 1.5rem;
+            }
+
+            .post-actions {
+                padding: 1rem 1.5rem;
+                flex-direction: column;
+            }
+
+            .action-button {
+                justify-content: center;
+            }
+
+            .stats-row {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-left, .nav-right {
+                gap: 1rem;
+            }
+
+            .nav-right {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-right .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .author-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .stats-row {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar(${name})}"></div>
-<div class="post-container">
-    <div th:if="${error}" class="error" th:text="${error}"></div>
-    <div th:unless="${error}">
-        <h1 th:text="${post.title}">Название поста</h1>
-        <p>Автор: <a th:href="@{/profile/{id}(id=${post.player.id})}" th:text="${post.player.name}">Имя пользователя</a></p>
-        <p>Игра: <span th:text="${post.game}"></span></p>
-        <p>Описание: <span th:text="${post.description ?: 'Без описания'}"></span></p>
-        <p>Уровень: <span th:text="${post.quantityOfHours}"></span></p>
-        <p>Создано: <span th:text="${#temporals.format(post.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a th:href="@{/}" class="nav-link">Главная</a>
+            <a th:href="@{/players}" class="nav-link">Игроки</a>
+        </div>
+
+        <!-- Если пользователь вошёл -->
+        <div class="nav-right" th:if="${name}">
+            <a th:href="@{/notifications}" class="nav-link">
+                <i class="fas fa-bell"></i>
+                Уведомления
+            </a>
+            <a th:href="@{/profile}" class="nav-link">
+                <i class="fas fa-user"></i>
+                Профиль
+            </a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+            </form>
+        </div>
+
+        <!-- Если пользователь не вошёл -->
+        <div class="nav-right" th:unless="${name}">
+            <a th:href="@{/login}" class="nav-link">Вход</a>
+            <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <!-- Back Button -->
+    <a th:href="@{/}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Вернуться на главную
+    </a>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${error}">Ошибка</span>
+    </div>
+
+    <!-- Post Container -->
+    <div th:unless="${error}" class="post-container">
+        <!-- Post Header -->
+        <div class="post-header">
+            <h1 class="post-title" th:text="${post.title}">Название поста</h1>
+
+            <div class="post-game">
+                <i class="fas fa-gamepad game-icon"></i>
+                <span th:text="${post.game}">Игра</span>
+            </div>
+
+            <div class="post-meta">
+                <div class="meta-item">
+                    <i class="fas fa-clock meta-icon"></i>
+                    <span th:text="${post.quantityOfHours} + ' часов опыта'">0 часов опыта</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar meta-icon"></i>
+                    <span th:text="${#temporals.format(post.createdAt, 'dd MMMM yyyy, HH:mm')}">Дата создания</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Author Info -->
+        <div class="author-info">
+            <div class="author-avatar" th:text="${post.player.name != null ? post.player.name.substring(0,1).toUpperCase() : 'U'}">U</div>
+            <div class="author-details">
+                <div class="author-name">Автор поста</div>
+                <a th:href="@{/profile/{id}(id=${post.player.id})}" class="author-link">
+                    <i class="fas fa-user"></i>
+                    <span th:text="${post.player.name ?: 'Просмотреть профиль'}">Посмотреть профиль</span>
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${post.description != null and !post.description.isEmpty()}">
+            <h2>Описание поста</h2>
+            <div class="post-description" th:utext="${post.description}"></div>
+        </div>
+        <div th:unless="${post.description != null and !post.description.isEmpty()}">
+            <h2>Автор не добавил описание к этому посту</h2>
+        </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${post.quantityOfHours}">0</div>
+                    <div class="stat-label">Часов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${#temporals.format(post.createdAt, 'dd')}">01</div>
+                    <div class="stat-label" th:text="${#temporals.format(post.createdAt, 'MMM')}">Янв</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post Actions (only for post owner) -->
         <div class="post-actions" th:if="${currentUserId != null and post.player.id == currentUserId}">
-            <a th:href="@{/edit-post/{id}(id=${post.id})}">Редактировать</a>
-            <form th:action="@{/delete-post/{id}(id=${post.id})}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
-                <button type="submit">Удалить</button>
+            <a th:href="@{/edit-post/{id}(id=${post.id})}" class="action-button action-edit">
+                <i class="fas fa-edit"></i>
+                Редактировать
+            </a>
+            <form th:action="@{/delete-post/{id}(id=${post.id})}" method="post"
+                  onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');"
+                  style="display: inline;">
+                <button type="submit" class="action-button action-delete">
+                    <i class="fas fa-trash"></i>
+                    Удалить
+                </button>
             </form>
         </div>
     </div>
-    <a th:href="@{/}">Вернуться на главную</a>
-</div>
+</main>
+
+<script>
+    // Функция для получения иконки игры
+    function getGameIcon(gameName) {
+        const gameIcons = {
+            'Counter-Strike 2': 'fas fa-crosshairs',
+            'Counter-Strike: Global Offensive': 'fas fa-crosshairs',
+            'Dota 2': 'fas fa-shield-alt',
+            'League of Legends': 'fas fa-crown',
+            'Valorant': 'fas fa-bullseye',
+            'Apex Legends': 'fas fa-mountain',
+            'Fortnite': 'fas fa-hammer',
+            'Minecraft': 'fas fa-cube',
+            'Grand Theft Auto V': 'fas fa-car',
+            'GTA V RP': 'fas fa-car',
+            'World of Warcraft': 'fas fa-dragon',
+            'Overwatch': 'fas fa-bolt',
+            'Rocket League': 'fas fa-futbol',
+            'PUBG: Battlegrounds': 'fas fa-parachute-box',
+            'PUBG Mobile': 'fas fa-mobile-alt',
+            'Call of Duty': 'fas fa-crosshairs',
+            'Destiny 2': 'fas fa-space-shuttle',
+            'Genshin Impact': 'fas fa-magic',
+            'Among Us': 'fas fa-user-secret',
+            'Fall Guys': 'fas fa-running',
+            'Dead by Daylight': 'fas fa-skull',
+            'Rust': 'fas fa-hammer',
+            'ARK: Survival Evolved': 'fas fa-dragon',
+            'ARK: Survival Ascended': 'fas fa-dragon',
+            'The Forest': 'fas fa-tree',
+            'Phasmophobia': 'fas fa-ghost',
+            'Garry\'s Mod': 'fas fa-wrench',
+            'Team Fortress 2': 'fas fa-bomb',
+            'Left 4 Dead 2': 'fas fa-zombie',
+            'Portal 2': 'fas fa-circle',
+            'Half-Life': 'fas fa-atom',
+            'Terraria': 'fas fa-pickaxe',
+            'Stardew Valley': 'fas fa-seedling',
+            'Don\'t Starve Together': 'fas fa-campfire',
+            'Sea of Thieves': 'fas fa-ship',
+            'War Thunder': 'fas fa-plane',
+            'World of Tanks': 'fas fa-tank',
+            'Euro Truck Simulator 2': 'fas fa-truck',
+            'Cities: Skylines': 'fas fa-city',
+            'Civilization VI': 'fas fa-globe',
+            'Age of Empires': 'fas fa-castle',
+            'StarCraft II': 'fas fa-rocket',
+            'Hearthstone': 'fas fa-cards',
+            'Magic: The Gathering': 'fas fa-hat-wizard',
+            'Chess.com': 'fas fa-chess',
+            'Roblox': 'fas fa-cubes',
+            'Brawl Stars': 'fas fa-star',
+            'Mobile Legends: Bang Bang': 'fas fa-mobile-alt',
+            'Free Fire': 'fas fa-fire',
+            'Clash of Clans': 'fas fa-shield',
+            'Clash Royale': 'fas fa-crown',
+            'Pokemon GO': 'fas fa-map-marker-alt',
+            'Candy Crush': 'fas fa-candy-cane'
+        };
+
+        return gameIcons[gameName] || 'fas fa-gamepad';
+    }
+
+    // Применяем иконку к игре после загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const gameIcon = document.querySelector('.game-icon');
+        const gameText = document.querySelector('.post-game span');
+
+        if (gameIcon && gameText) {
+            const gameName = gameText.textContent;
+            const iconClass = getGameIcon(gameName);
+            gameIcon.className = `${iconClass} game-icon`;
+        }
+
+        // Анимация появления контейнера
+        const container = document.querySelector('.post-container');
+        if (container) {
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                container.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    });
+
+    // Анимация кнопки удаления при подтверждении
+    document.querySelectorAll('form[onsubmit*="confirm"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const button = this.querySelector('.action-delete');
+            if (button) {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Удаление...';
+                button.disabled = true;
+            }
+        });
+    });
+
+    // Плавный скролл для кнопки "Назад"
+    document.querySelector('.back-button').addEventListener('click', function(e) {
+        // Можно добавить анимацию перехода назад
+        this.style.transform = 'translateX(-4px)';
+        setTimeout(() => {
+            this.style.transform = 'translateX(0)';
+        }, 150);
+    });
+</script>
 </body>
 </html>
