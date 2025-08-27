@@ -4,14 +4,12 @@ import com.example.research2.SpringBoot.models.Player;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 public class PlayerDetails implements UserDetails {
 
     private final Player player;
-
 
     public PlayerDetails(Player player) {
         this.player = player;
@@ -49,7 +47,8 @@ public class PlayerDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // Аккаунт активен только если email подтвержден
+        return player.isVerified();
     }
 
     public Player getPlayer() {

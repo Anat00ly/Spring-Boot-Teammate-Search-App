@@ -34,6 +34,17 @@ public class Player {
 
     private String tgLink;
 
+    private String verificationToken;
+
+    private boolean isVerified;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(nullable = false)
+    private boolean enabled = false; // или true, если пользователь сразу активен
+
+
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Friendship> sentFriendRequest;
 
@@ -142,6 +153,30 @@ public class Player {
 
     public void setReceivedFriendRequest(List<Friendship> receivedFriendRequest) {
         this.receivedFriendRequest = receivedFriendRequest;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+    }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
     }
 
     @Override

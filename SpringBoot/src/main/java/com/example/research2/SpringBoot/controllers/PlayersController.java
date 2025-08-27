@@ -34,6 +34,12 @@ public class PlayersController {
 
     @GetMapping("/players")
     public String players(Model model, Principal principal) {
+        // Проверяем, подтвержден ли аккаунт пользователя
+        Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
+        if (currentPlayer == null || !currentPlayer.isVerified()) {
+            return "redirect:/login?error=email_not_verified";
+        }
+
         List<Player> players = playerService.findAllExceptCurrentPlayer(principal.getName());
         model.addAttribute("players", players);
         return "players";
@@ -43,25 +49,31 @@ public class PlayersController {
     public String showProfilePage(Model model, Principal principal) {
         Player player = playerService.findPlayerByEmail(principal.getName());
 
+        // Проверяем верификацию
+        if (player == null || !player.isVerified()) {
+            return "redirect:/login?error=email_not_verified";
+        }
+
         model.addAttribute("player", player);
         model.addAttribute("currentUserId", player.getId());
         model.addAttribute("isCurrentUser", true);
-        model.addAttribute("isFriend", false); // не нужен, но Thymeleaf требует
+        model.addAttribute("isFriend", false);
 
         return "profile";
     }
 
-
-
     @GetMapping("/profile/{id}")
     public String viewPlayerPage(@PathVariable Long id, Model model, Principal principal) {
+        Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
+
+        // Проверяем верификацию текущего пользователя
+        if (currentPlayer == null || !currentPlayer.isVerified()) {
+            return "redirect:/login?error=email_not_verified";
+        }
+
         Player viewedPlayer = playerService.findPlayerById(id);
         if (viewedPlayer == null) {
-            return "redirect:/players"; // Перенаправление, если игрок не найден
-        }
-        Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
-        if (currentPlayer == null) {
-            return "redirect:/login"; // Перенаправление, если текущий пользователь не найден
+            return "redirect:/players";
         }
 
         model.addAttribute("player", viewedPlayer);
@@ -73,7 +85,6 @@ public class PlayersController {
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
-        // Добавить список друзей игрока
         List<Player> friends = friendshipService.getFriends(viewedPlayer);
         model.addAttribute("friends", friends != null ? friends : new ArrayList<>());
 
@@ -85,11 +96,15 @@ public class PlayersController {
         return "profile";
     }
 
-
-
     @GetMapping("/settings")
     public String showSettingsPage(Model model, Principal principal) {
         Player player = playerService.findPlayerByEmail(principal.getName());
+
+        // Проверяем верификацию
+        if (player == null || !player.isVerified()) {
+            return "redirect:/login?error=email_not_verified";
+        }
+
         model.addAttribute("player", player);
         model.addAttribute("timezones", TimezoneUtils.getAllTimezones());
         model.addAttribute("languages", LanguageUtils.getAllLanguages());
@@ -99,13 +114,15 @@ public class PlayersController {
     }
 
     @PostMapping("/settings")
-    public String saveSettings(@ModelAttribute("player")Player player, Principal principal) {
+    public String saveSettings(@ModelAttribute("player") Player player, Principal principal) {
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
+
+        // Проверяем верификацию
+        if (currentPlayer == null || !currentPlayer.isVerified()) {
+            return "redirect:/login?error=email_not_verified";
+        }
+
         playerService.updatePlayer(currentPlayer.getId(), player);
         return "redirect:/settings";
     }
-
-
-
-
 }

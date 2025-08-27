@@ -5,7 +5,6 @@ import com.example.research2.SpringBoot.repositories.PlayerRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PlayerService {
@@ -21,13 +20,14 @@ public class PlayerService {
 
     public List<Player> findAllExceptCurrentPlayer(String email){
         List<Player> players = playerRepo.findAllByEmailNot(email);
-        return players;
+        // Возвращаем только подтвержденных пользователей
+        return players.stream()
+                .filter(Player::isVerified)
+                .toList();
     }
 
     public Player findPlayerByEmail(String email) {
-
         return playerRepo.findByEmail(email).orElse(null);
-
     }
 
     public Player findPlayerById(Long id) {
@@ -36,8 +36,8 @@ public class PlayerService {
     }
 
     public void updatePlayer(Long id, Player player) {
-           Player currentPlayer = playerRepo.findById(id)
-                   .orElseThrow(() -> new RuntimeException("Can't find the player"));
+        Player currentPlayer = playerRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Can't find the player"));
 
         currentPlayer.setName(player.getName());
         currentPlayer.setBirthday(player.getBirthday());
@@ -48,7 +48,6 @@ public class PlayerService {
         currentPlayer.setGames(player.getGames());
         currentPlayer.setTgLink(player.getTgLink());
         playerRepo.save(currentPlayer);
-
     }
 
     public Player findByEmail(String email) {
@@ -59,5 +58,31 @@ public class PlayerService {
         return findPlayerById(id);
     }
 
+    // Дополнительные методы для работы с верификацией
 
+    public boolean existsByEmail(String email) {
+        return playerRepo.existsByEmail(email);
+    }
+
+    public void updateVerificationToken(String email, String token) {
+        Player player = playerRepo.findByEmail(email).orElse(null);
+        if (player != null) {
+            player.setVerificationToken(token);
+            playerRepo.save(player);
+        }
+    }
+
+    public boolean verifyPlayer(String verificationToken) {
+        // Найдем пользователя по токену (нужно добавить метод в репозиторий)
+        List<Player> allPlayers = playerRepo.findAll();
+        for (Player player : allPlayers) {
+            if (verificationToken.equals(player.getVerificationToken())) {
+                player.setVerified(true);
+                player.setVerificationToken(null);
+                playerRepo.save(player);
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -26,7 +26,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/login", "/register", "/", "/post/{id}").permitAll() // Разрешаем доступ к главной странице и странице поста
+                        // Разрешаем доступ к страницам регистрации и входа
+                        .requestMatchers("/login", "/register", "/", "/post/{id}").permitAll()
+                        // Разрешаем доступ к endpoints верификации email
+                        .requestMatchers("/req/signup/verify", "/resend-verification").permitAll()
+                        // Разрешаем доступ к статическим ресурсам
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -55,7 +60,13 @@ public class SecurityConfig {
             @Override
             public PlayerDetails loadUserByUsername(String email) throws UsernameNotFoundException {
                 var player = playerRepo.findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                        .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + email));
+
+                // Проверяем, подтвержден ли email пользователя
+                if (!player.isVerified()) {
+                    throw new UsernameNotFoundException("Email не подтвержден. Проверьте вашу почту.");
+                }
+
                 return new PlayerDetails(player);
             }
         };
