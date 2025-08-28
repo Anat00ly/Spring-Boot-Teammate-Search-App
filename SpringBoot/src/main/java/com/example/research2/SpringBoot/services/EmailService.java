@@ -62,7 +62,7 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setFrom(from);
             System.out.println("FROM EMAIL: " + from);
-
+            System.out.println("Verification email sent to: " + email);
             helper.setText(content, true);
             mailSender.send(mimeMessage);
 
