@@ -2,7 +2,9 @@ package com.example.research2.SpringBoot.services;
 
 import com.example.research2.SpringBoot.models.Player;
 import com.example.research2.SpringBoot.repositories.PlayerRepo;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -85,4 +87,11 @@ public class PlayerService {
         }
         return false;
     }
+
+    @Transactional
+    public void updatePassword(Player player, String newPassword, PasswordEncoder passwordEncoder) {
+        player.setPassword(passwordEncoder.encode(newPassword));
+        playerRepo.save(player);
+    }
+
 }
