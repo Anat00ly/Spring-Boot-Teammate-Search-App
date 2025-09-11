@@ -30,6 +30,8 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/", "/post/{id}").permitAll()
                         // Разрешаем доступ к endpoints верификации email
                         .requestMatchers("/req/signup/verify", "/resend-verification").permitAll()
+                        // Разрешаем доступ к страницам восстановления пароля
+                        .requestMatchers("/forgot-password", "/req/reset-password").permitAll()
                         // Разрешаем доступ к статическим ресурсам
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()

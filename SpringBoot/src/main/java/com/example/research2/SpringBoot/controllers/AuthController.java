@@ -1,4 +1,4 @@
-// AuthController.java - Интегрированная версия с email-верификацией
+// AuthController.java - С добавлением функции восстановления пароля
 package com.example.research2.SpringBoot.controllers;
 
 import com.example.research2.SpringBoot.models.Player;
@@ -158,4 +158,116 @@ public class AuthController {
             return "register";
         }
     }
+
+    // === НОВЫЕ МЕТОДЫ ДЛЯ ВОССТАНОВЛЕНИЯ ПАРОЛЯ ===
+
+    // Показать страницу запроса восстановления пароля
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordPage() {
+        return "forgot-password";
+    }
+
+    // Обработка запроса на восстановление пароля
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+        try {
+            Player player = playerRepo.findByEmail(email).orElse(null);
+
+            if (player == null) {
+                model.addAttribute("error", "Пользователь с таким email не найден.");
+                return "forgot-password";
+            }
+
+            if (!player.isVerified()) {
+                model.addAttribute("error", "Сначала подтвердите ваш email адрес.");
+                return "forgot-password";
+            }
+
+            // Генерируем токен для сброса пароля
+            String resetToken = JwtTokenUtils.generateToken(player.getEmail());
+            player.setResetToken(resetToken);
+            playerRepo.save(player);
+
+            // Отправляем email с инструкциями по восстановлению
+            emailService.sendForgotPasswordEmail(player.getEmail(), resetToken);
+
+            model.addAttribute("message", "Инструкции по восстановлению пароля отправлены на вашу почту.");
+            return "login";
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
+            return "forgot-password";
+        }
+    }
+
+    // Показать страницу сброса пароля (переход из email)
+    @GetMapping("/req/reset-password")
+    public String showResetPasswordPage(@RequestParam("token") String token, Model model) {
+        try {
+            String email = jwtTokenUtils.extractEmail(token);
+            Player player = playerRepo.findByEmail(email).orElse(null);
+
+            if (player == null || player.getResetToken() == null) {
+                model.addAttribute("error", "Неверная ссылка или токен истек!");
+                return "login";
+            }
+
+            if (!jwtTokenUtils.validateToken(token) || !player.getResetToken().equals(token)) {
+                model.addAttribute("error", "Неверная ссылка или токен истек!");
+                return "login";
+            }
+
+            model.addAttribute("token", token);
+            return "reset-password";
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Ошибка при проверке токена: " + e.getMessage());
+            return "login";
+        }
+    }
+
+    // Обработка сброса пароля
+    @PostMapping("/req/reset-password")
+    public String processResetPassword(@RequestParam("token") String token,
+                                       @RequestParam("password") String password,
+                                       @RequestParam("confirmPassword") String confirmPassword,
+                                       Model model) {
+        try {
+            // Проверка совпадения паролей
+            if (!password.equals(confirmPassword)) {
+                model.addAttribute("error", "Пароли не совпадают!");
+                model.addAttribute("token", token);
+                return "reset-password";
+            }
+
+            // Проверка токена
+            if (!jwtTokenUtils.validateToken(token)) {
+                model.addAttribute("error", "Ссылка для сброса пароля недействительна или истекла!");
+                return "login";
+            }
+
+            // Извлекаем email из токена
+            String email = jwtTokenUtils.extractEmail(token);
+            Player player = playerRepo.findByEmail(email).orElse(null);
+
+            if (player == null) {
+                model.addAttribute("error", "Пользователь не найден!");
+                return "login";
+            }
+
+            // Если всё ок — обновляем пароль
+            player.setPassword(passwordEncoder.encode(password));
+            player.setResetToken(null); // Можно не хранить токен, но если поле есть — обнуляем
+            playerRepo.save(player);
+
+            model.addAttribute("message", "Пароль успешно обновлен! Теперь вы можете войти с новым паролем.");
+            return "login";
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Ошибка при сбросе пароля: " + e.getMessage());
+            model.addAttribute("token", token);
+            return "reset-password";
+        }
+    }
+
 }
