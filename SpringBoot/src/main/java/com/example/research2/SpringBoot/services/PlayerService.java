@@ -1,14 +1,31 @@
 package com.example.research2.SpringBoot.services;
 
+import com.example.research2.SpringBoot.controllers.PlayersController;
 import com.example.research2.SpringBoot.models.Player;
 import com.example.research2.SpringBoot.repositories.PlayerRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PlayerService {
     private final PlayerRepo playerRepo;
+
+    @Value("${upload.path}")
+    private String uploadPath; // e.g. uploads/avatars
+
+    private static final Logger logger = LoggerFactory.getLogger(PlayersController.class);
+
 
     public PlayerService(PlayerRepo playerRepo) {
         this.playerRepo = playerRepo;
@@ -85,4 +102,54 @@ public class PlayerService {
         }
         return false;
     }
+
+    public void updateAvatar(Long playerId, MultipartFile file) throws IOException {
+        Player player = playerRepo.findById(playerId)
+                .orElseThrow(()-> new RuntimeException("Player not found"));
+
+        if(file !=null && !file.isEmpty()){
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path uploadDir = Paths.get(uploadPath,"avatar");
+            Files.createDirectories(uploadDir);
+            Path filePath = uploadDir.resolve(fileName);
+            file.transferTo(filePath.toFile());
+            player.setAvatarURL("/uploads/avatar" + fileName);
+            playerRepo.save(player);
+        }
+
+    }
+
+
+    public String getUploadPath() {
+        return uploadPath;
+    }
+
+    /**
+     * Вспомогательный метод: сохраняет файл и обновляет player.avatarURL.
+     * Возвращает публичный URL (/avatars/<file>) или null в случае ошибки.
+     */
+    public String saveAvatarFile(Player player, MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+        try {
+            String original = StringUtils.cleanPath(file.getOriginalFilename());
+            if (original.contains("..")) {
+                throw new IOException("Invalid file name");
+            }
+
+            String filename = UUID.randomUUID().toString() + "_" + original;
+            Path uploadDir = Paths.get(uploadPath); // uploadPath может быть относительным или абсолютным
+            Files.createDirectories(uploadDir);
+            Path filePath = uploadDir.resolve(filename);
+            file.transferTo(filePath.toFile());
+
+            String publicUrl = "/avatars/" + filename;
+            player.setAvatarURL(publicUrl);
+            playerRepo.save(player);
+            return publicUrl;
+        } catch (Exception e) {
+            logger.error("Error saving avatar file", e);
+            return null;
+        }
+    }
+
 }

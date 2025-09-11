@@ -10,21 +10,31 @@ import com.example.research2.SpringBoot.util.LanguageUtils;
 import com.example.research2.SpringBoot.util.TimezoneUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class PlayersController {
 
     private final PlayerService playerService;
     private final PlayerRepo playerRepo;
-    private final FriendshipService friendshipService;
+    private final FriendshipService friendshipService;private static final Logger logger = LoggerFactory.getLogger(PlayersController.class);
+
+
 
     public PlayersController(PlayerService playerService, PlayerRepo playerRepo, FriendshipService friendshipService) {
         this.playerService = playerService;
@@ -124,5 +134,45 @@ public class PlayersController {
 
         playerService.updatePlayer(currentPlayer.getId(), player);
         return "redirect:/settings";
+    }
+
+    @PostMapping("/profile/avatar")
+    public String uploadAvatar(@RequestParam("avatar") MultipartFile file, Principal principal) {
+        if (file == null || file.isEmpty()) {
+            return "redirect:/profile?error=empty";
+        }
+
+        try {
+            // берем путь из playerService (оно подхватывает значение upload.path)
+            String uploadDir = playerService.getUploadPath(); // добавим getter в сервис ниже
+
+            // создаём папку, если её нет
+            Path uploadPath = Paths.get(uploadDir);
+            Files.createDirectories(uploadPath);
+
+            // защищённое имя файла
+            String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+            // запретим попытки path traversal
+            if (originalFilename.contains("..")) {
+                logger.warn("Invalid file name: {}", originalFilename);
+                return "redirect:/profile?error=invalid_name";
+            }
+
+            String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
+            Path target = uploadPath.resolve(fileName);
+
+            // сохраняем файл
+            file.transferTo(target.toFile());
+
+            // обновляем URL аватара в базе данных — публичный URL должен начинаться с /avatars/
+            Player player = playerService.findByEmail(principal.getName());
+            player.setAvatarURL("/avatars/" + fileName);
+            playerRepo.save(player);
+
+            return "redirect:/profile";
+        } catch (Exception e) {
+            logger.error("Error uploading avatar", e);
+            return "redirect:/profile?error=upload";
+        }
     }
 }

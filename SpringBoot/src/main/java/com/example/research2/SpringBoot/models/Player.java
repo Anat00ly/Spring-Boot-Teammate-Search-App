@@ -44,6 +44,9 @@ public class Player {
     @Column(nullable = false)
     private boolean enabled = false; // или true, если пользователь сразу активен
 
+    @Column(name = "avatar_url", nullable = true)
+    private String avatarURL;
+
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Friendship> sentFriendRequest;
@@ -173,6 +176,22 @@ public class Player {
 
     public String getResetToken() {
         return resetToken;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getAvatarURL() {
+        return avatarURL;
+    }
+
+    public void setAvatarURL(String avatarURL) {
+        this.avatarURL = avatarURL;
     }
 
     public void setResetToken(String resetToken) {
