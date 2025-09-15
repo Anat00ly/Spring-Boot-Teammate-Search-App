@@ -33,7 +33,7 @@ public class SecurityConfig {
                         // Разрешаем доступ к страницам восстановления пароля
                         .requestMatchers("/forgot-password", "/req/reset-password").permitAll()
                         // Разрешаем доступ к статическим ресурсам
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico","/resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

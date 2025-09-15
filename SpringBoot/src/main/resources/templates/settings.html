@@ -1,209 +1,90 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru" x-data="{ formValid: false }" @input="validateForm()">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Настройки профиля</title>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        :root {
-            --bg-primary: #1c1c1e;
-            --bg-secondary: #2c2c2e;
-            --text-primary: #ffffff;
-            --text-secondary: #adadb3;
-            --border-color: #48484a;
-            --accent-purple: #8b5cf6;
-            --border-radius: 12px;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .navbar {
-            background: rgba(28, 28, 30, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            margin-left: 1.5rem;
-        }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-        }
-
-        .btn-primary {
-            background: var(--accent-purple);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .container {
-            max-width: 720px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        input, select, textarea {
-            width: 100%;
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 0.75rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-        }
-
-        input[type="radio"] {
-            width: auto;
-            margin-right: 0.5rem;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .submit-button {
-            background-color: var(--accent-purple);
-            color: white;
-            padding: 0.6rem 1.25rem;
-            border-radius: var(--border-radius);
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .submit-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .cancel-link {
-            margin-left: 1rem;
-            color: var(--accent-purple);
-            text-decoration: none;
-        }
-
-        .cancel-link:hover {
-            text-decoration: underline;
-        }
-
-        .error-box {
-            background: rgba(255, 59, 48, 0.1);
-            border: 1px solid rgba(255, 59, 48, 0.3);
-            color: #ff6b6b;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1.5rem;
-        }
-    </style>
+    <link th:href="@{/css/settings-styles.css}" rel="stylesheet">
+    <link th:href="@{/css/navbar-styles.css}" rel="stylesheet">
 </head>
 <body>
-
-<nav class="navbar">
-    <div class="nav-container">
-        <div>
-            <a th:href="@{/}" class="nav-link">Главная</a>
-            <a th:href="@{/players}" class="nav-link">Игроки</a>
-        </div>
-        <div th:if="${name}">
-            <a th:href="@{/notifications}" class="nav-link"><i class="fas fa-bell"></i></a>
-            <a th:href="@{/profile}" class="nav-link"><i class="fas fa-user"></i></a>
-        </div>
-    </div>
-</nav>
-
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 <div class="container">
     <h1>Настройки профиля</h1>
 
     <div th:if="${error}" class="error-box" th:text="${error}"></div>
 
-    <form th:action="@{/settings}" th:object="${player}" method="post" x-ref="form">
-        <label for="name"><i class="fas fa-user mr-1"></i> Имя:</label>
-        <input type="text" id="name" th:field="*{name}" required>
+    <div x-data="settingsForm()">
+        <form th:action="@{/settings}" th:object="${player}" method="post" @input="validateForm()">
+            <label for="name"><i class="fas fa-user mr-1"></i> Имя:</label>
+            <input type="text" id="name" th:field="*{name}" required>
 
-        <label for="birthDate"><i class="fas fa-calendar-alt mr-1"></i> Дата рождения:</label>
-        <input type="date" id="birthDate" th:field="*{birthday}">
+            <label for="birthDate"><i class="fas fa-calendar-alt mr-1"></i> Дата рождения:</label>
+            <input type="date" id="birthDate" th:field="*{birthday}">
 
-        <label><i class="fas fa-venus-mars mr-1"></i> Пол:</label>
-        <div class="radio-group">
-            <label><input type="radio" th:field="*{gender}" value="Мужской"> Мужской</label>
-            <label><input type="radio" th:field="*{gender}" value="Женский"> Женский</label>
-            <label><input type="radio" th:field="*{gender}" value="Другое"> Другое</label>
-        </div>
+            <label><i class="fas fa-venus-mars mr-1"></i> Пол:</label>
+            <div class="radio-group">
+                <label><input type="radio" th:field="*{gender}" value="Мужской"> Мужской</label>
+                <label><input type="radio" th:field="*{gender}" value="Женский"> Женский</label>
+                <label><input type="radio" th:field="*{gender}" value="Другое"> Другое</label>
+            </div>
 
-        <label for="country"><i class="fas fa-globe mr-1"></i> Страна:</label>
-        <select id="country" th:field="*{country}">
-            <option value="">Выберите страну</option>
-            <option th:each="country : ${countries}" th:value="${country}" th:text="${country}"></option>
-        </select>
+            <label for="country"><i class="fas fa-globe mr-1"></i> Страна:</label>
+            <select id="country" th:field="*{country}">
+                <option value="">Выберите страну</option>
+                <option th:each="country : ${countries}" th:value="${country}" th:text="${country}"></option>
+            </select>
 
-        <label for="timezone"><i class="fas fa-clock mr-1"></i> Часовой пояс:</label>
-        <select id="timezone" th:field="*{timezone}">
-            <option value="">Выберите часовой пояс</option>
-            <option th:each="timezone : ${timezones}" th:value="${timezone}" th:text="${timezone}"></option>
-        </select>
+            <label for="timezone"><i class="fas fa-clock mr-1"></i> Часовой пояс:</label>
+            <select id="timezone" th:field="*{timezone}">
+                <option value="">Выберите часовой пояс</option>
+                <option th:each="timezone : ${timezones}" th:value="${timezone}" th:text="${timezone}"></option>
+            </select>
 
-        <label for="languages"><i class="fas fa-language mr-1"></i> Владение языками:</label>
-        <input type="text" id="languages" th:field="*{languages}">
+            <label for="languages"><i class="fas fa-language mr-1"></i> Владение языками:</label>
+            <input type="text" id="languages" th:field="*{languages}">
 
-        <label for="games"><i class="fas fa-gamepad mr-1"></i> Игры:</label>
-        <select id="games" th:field="*{games}" multiple>
-            <option th:each="game : ${games}" th:value="${game}" th:text="${game}"></option>
-        </select>
+            <label for="games"><i class="fas fa-gamepad mr-1"></i> Игры:</label>
+            <select id="games" th:field="*{games}" multiple>
+                <option th:each="game : ${games}" th:value="${game}" th:text="${game}"></option>
+            </select>
 
-        <label for="telegram"><i class="fab fa-telegram mr-1"></i> Telegram:</label>
-        <input type="text" id="telegram" th:field="*{tgLink}">
+            <label for="telegram"><i class="fab fa-telegram mr-1"></i> Telegram:</label>
+            <input type="text" id="telegram" th:field="*{tgLink}">
 
-        <div style="margin-top: 1.5rem;">
-            <button type="submit" class="submit-button" :disabled="!formValid">
-                <i class="fas fa-check mr-1"></i> Сохранить изменения
-            </button>
-            <a th:href="@{/profile}" class="cancel-link"><i class="fas fa-times mr-1"></i> Отмена</a>
-        </div>
-    </form>
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="submit-button" :disabled="!formValid">
+                    <i class="fas fa-check mr-1"></i> Сохранить изменения
+                </button>
+                <a th:href="@{/profile}" class="cancel-link"><i class="fas fa-times mr-1"></i> Отмена</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-    function validateForm() {
-        const form = this.$refs.form;
-        const inputs = form.querySelectorAll('input[required]');
-        this.formValid = Array.from(inputs).every(input => input.value.trim() !== '');
+    function settingsForm() {
+        return {
+            formValid: false,
+
+            init() {
+                // Проверяем валидность формы при инициализации
+                this.validateForm();
+            },
+
+            validateForm() {
+                // Получаем все обязательные поля
+                const requiredInputs = document.querySelectorAll('input[required]');
+
+                // Проверяем, что все обязательные поля заполнены
+                this.formValid = Array.from(requiredInputs).every(input => {
+                    return input.value && input.value.trim() !== '';
+                });
+
+                console.log('Form valid:', this.formValid); // Для отладки
+            }
+        }
     }
 </script>
 
