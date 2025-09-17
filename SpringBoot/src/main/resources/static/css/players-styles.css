@@ -8,22 +8,20 @@
     --border-radius: 12px;
     --transition: all 0.2s ease;
 }
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     margin: 0;
-    line-height:1.5;
+    line-height: 1.5;
 }
-
-
 
 .btn {
     padding: 0.5rem 1rem;
@@ -55,6 +53,23 @@ body {
 h1 {
     font-size: 1.8rem;
     margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+/* Контейнер для игроков */
+.players-container {
+    margin-top: 1.5rem;
+}
+
+/* Карточки игроков */
+.space-y-4 > * + * {
+    margin-top: 1rem;
 }
 
 .player-card {
@@ -62,18 +77,75 @@ h1 {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.25rem;
+    transition: var(--transition);
+}
+
+.player-card:hover {
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.player-info {
+    background: rgba(139, 92, 246, 0.05);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.player-info strong {
+    color: var(--accent-purple);
 }
 
 .player-link {
     color: var(--accent-purple);
     text-decoration: none;
     font-weight: 500;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 8px;
+    transition: var(--transition);
 }
 
 .player-link:hover {
-    opacity: 0.8;
+    background: rgba(139, 92, 246, 0.2);
+    transform: translateX(5px);
 }
 
+.player-link i {
+    margin-right: 0.5rem;
+}
+
+/* Сообщение когда нет игроков */
+.no-players-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
+}
+
+.no-players-message i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.no-players-message h2 {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.no-players-message p {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Ошибки */
 .error-box {
     background: rgba(255, 59, 48, 0.1);
     border: 1px solid rgba(255, 59, 48, 0.3);
@@ -81,4 +153,29 @@ h1 {
     padding: 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
+}
+
+/* Утилиты */
+.mr-1 {
+    margin-right: 0.25rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .player-card {
+        padding: 1rem;
+    }
+
+    .player-info {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
 }

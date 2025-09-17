@@ -11,17 +11,34 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-
 <div class="container">
     <h1>Список игроков</h1>
 
     <div th:if="${error}" class="error-box" th:text="${error}"></div>
 
-    <div class="space-y-4">
-        <div th:each="player : ${players}" class="player-card">
-            <a th:href="@{/profile/{id}(id=${player.id})}" class="player-link">
-                <i class="fas fa-user mr-1"></i> <span th:text="${player.name}">Имя</span>
-            </a>
+    <!-- Сообщение если нет игроков -->
+    <div th:if="${#lists.isEmpty(players)}" class="no-players-message">
+        <i class="fas fa-users"></i>
+        <h2>Игроков не найдено</h2>
+        <p>В списке нет других игроков. Станьте первым, кто найдёт друзей для игры!</p>
+    </div>
+
+    <!-- Список игроков -->
+    <div th:unless="${#lists.isEmpty(players)}" class="players-container">
+        <h2>Найдено игроков: <span th:text="${#lists.size(players)}">0</span></h2>
+
+        <div class="space-y-4">
+            <div th:each="player : ${players}" class="player-card">
+                <div class="player-info">
+                    <strong>Имя:</strong> <span th:text="${player.name}">N/A</span><br>
+                    <strong>Email:</strong> <span th:text="${player.email}">N/A</span><br>
+                </div>
+                <a th:href="@{/profile/{id}(id=${player.id})}" class="player-link">
+                    <i class="fas fa-user mr-1"></i>
+                    <span th:text="${player.name}">Имя</span>
+                    → Посмотреть профиль
+                </a>
+            </div>
         </div>
     </div>
 </div>
