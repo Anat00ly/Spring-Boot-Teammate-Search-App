@@ -41,8 +41,9 @@ public class FriendshipController {
     @PostMapping("/add/{receiverId}")
     public String sendFriendRequest(@PathVariable Long receiverId, Principal principal) {
         Player sender = playerService.findPlayerByEmail(principal.getName());
+
         friendshipService.sendFriendRequest(sender.getId(), receiverId);
-        return "redirect:/mainPage";
+        return "redirect:/profile/" + receiverId;
     }
 
     @PostMapping("/friendship/accept/{notificationId}")

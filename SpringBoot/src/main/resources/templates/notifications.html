@@ -1,10 +1,16 @@
-
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru" x-data="{ notifications: [], error: '' }" x-init="notifications = $el.querySelectorAll('[data-notification-id]').map(el => ({ id: el.dataset.notificationId }));">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru"
+      x-data="{ notifications: [], error: '' }"
+      x-init="notifications = $el.querySelectorAll('[data-notification-id]').map(el => ({ id: el.dataset.notificationId }));">
 <head>
     <meta charset="UTF-8">
     <title>Уведомления</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSRF мета должны быть в head, чтобы скрипт их нашёл -->
+    <meta th:if="${_csrf}" name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:if="${_csrf}" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link th:href="@{/css/notifications-styles.css}" rel="stylesheet">
@@ -27,18 +33,33 @@
         </button>
 
         <div class="space-y-4">
-            <div th:each="notification : ${notifications}" class="notification-card" :data-notification-id="${notification.id}">
+            <div th:each="notification : ${notifications}" class="notification-card"
+                 th:attr="data-notification-id=${notification.id}">
                 <p class="notification-message" th:text="${notification.message}">Сообщение уведомления</p>
                 <div class="button-group">
-                    <form th:if="${notification.type == 'FRIEND_REQUEST'}" th:action="@{/notifications/accept/{id}(id=${notification.id})}" method="post">
-                        <button type="submit" class="btn action-button"><i class="fas fa-user-plus"></i> Принять</button>
+                    <!-- Принять -->
+                    <form th:if="${notification.type.name() == 'FRIEND_REQUEST'}"
+                          th:action="@{/friendship/accept/{id}(id=${notification.id})}" method="post"
+                          class="ajax-action">
+                        <button type="submit" class="btn action-button">
+                            <i class="fas fa-user-plus"></i> Принять
+                        </button>
                     </form>
-                    <form th:if="${notification.type == 'FRIEND_REQUEST'}" th:action="@{/notifications/reject/{id}(id=${notification.id})}" method="post">
-                        <button type="submit" class="btn delete-button"><i class="fas fa-user-times"></i> Отклонить</button>
+                    <!-- Отклонить -->
+                    <form th:if="${notification.type.name() == 'FRIEND_REQUEST'}"
+                          th:action="@{/friendship/reject/{id}(id=${notification.id})}" method="post"
+                          class="ajax-action">
+                        <button type="submit" class="btn delete-button">
+                            <i class="fas fa-user-times"></i> Отклонить
+                        </button>
                     </form>
-                    <button @click="deleteNotification(${notification.id})" class="btn delete-button">
-                        <i class="fas fa-trash"></i> Удалить
-                    </button>
+                    <!-- Удалить (с подтверждением) -->
+                    <form th:action="@{/notifications/delete/{id}(id=${notification.id})}" method="post"
+                          class="ajax-action" data-confirm="true">
+                        <button type="submit" class="btn delete-button">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -46,48 +67,68 @@
 </div>
 
 <script>
-    async function deleteNotification(notificationId) {
-        if (!confirm('Удалить уведомление?')) return;
-        try {
-            const response = await fetch(`/notifications/delete/${notificationId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+    document.addEventListener('DOMContentLoaded', () => {
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+        const csrfToken = csrfMeta ? csrfMeta.content : null;
+        const csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.content : 'X-CSRF-TOKEN';
+
+        document.querySelectorAll('form.ajax-action').forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (form.dataset.confirm === 'true') {
+                    if (!confirm('Удалить уведомление?')) return;
+                }
+
+                try {
+                    const body = new FormData(form);
+                    const headers = {};
+                    if (csrfToken) headers[csrfHeaderName] = csrfToken;
+
+                    const response = await fetch(form.action, {
+                        method: (form.method || 'POST').toUpperCase(),
+                        headers: headers,
+                        body: body
+                    });
+
+                    if (response.ok) {
+                        const card = form.closest('.notification-card');
+                        if (card) card.remove();
+                    } else {
+                        const text = await response.text().catch(()=>null);
+                        alert('Ошибка: ' + (text || response.status));
+                    }
+                } catch (err) {
+                    alert('Ошибка сети: ' + err.message);
                 }
             });
-            if (response.ok) {
-                document.querySelector(`[data-notification-id="${notificationId}"]`).remove();
-            } else {
-                Alpine.store('notifications', { error: 'Ошибка при удалении уведомления' });
-            }
-        } catch (e) {
-            Alpine.store('notifications', { error: 'Ошибка сети: ' + e.message });
-        }
-    }
+        });
+    });
 
+    // markAllAsRead — минимально изменён, использует CSRF из meta
     async function markAllAsRead() {
         if (!confirm('Отметить все уведомления как прочитанные?')) return;
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+        const csrfToken = csrfMeta ? csrfMeta.content : null;
+        const csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.content : 'X-CSRF-TOKEN';
         try {
+            const headers = {};
+            if (csrfToken) headers[csrfHeaderName] = csrfToken;
             const response = await fetch('/notifications/mark-all-read', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
-                }
+                headers: headers
             });
             if (response.ok) {
                 document.querySelectorAll('[data-notification-id]').forEach(el => el.remove());
             } else {
-                Alpine.store('notifications', { error: 'Ошибка при отметке уведомлений' });
+                alert('Ошибка при отметке уведомлений');
             }
         } catch (e) {
-            Alpine.store('notifications', { error: 'Ошибка сети: ' + e.message });
+            alert('Ошибка сети: ' + e.message);
         }
     }
 </script>
-
-<meta th:if="${_csrf}" name="_csrf" th:content="${_csrf.token}"/>
-<meta th:if="${_csrf}" name="_csrf_header" th:content="${_csrf.headerName}"/>
 </body>
 </html>
