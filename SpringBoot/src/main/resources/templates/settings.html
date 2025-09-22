@@ -53,6 +53,36 @@
             <label for="telegram"><i class="fab fa-telegram mr-1"></i> Telegram:</label>
             <input type="text" id="telegram" th:field="*{tgLink}">
 
+            <!-- Обновленная секция приватности с двумя вариантами -->
+            <div class="privacy-section">
+                <label><i class="fas fa-lock mr-1"></i> Приватность профиля:</label>
+                <div class="privacy-options">
+                    <div class="privacy-option">
+                        <input type="radio" id="publicProfile" name="privacy" th:field="*{private}" th:value="false">
+                        <label for="publicProfile" class="privacy-label">
+                            <i class="fas fa-globe privacy-icon"></i>
+                            <div class="privacy-content">
+                                <span class="privacy-title">Открытый профиль</span>
+                                <span class="privacy-description">Профиль видят все пользователи</span>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="privacy-option">
+                        <input type="radio" id="privateProfile" name="privacy" th:field="*{private}" th:value="true">
+                        <label for="privateProfile" class="privacy-label">
+                            <i class="fas fa-lock privacy-icon"></i>
+                            <div class="privacy-content">
+                                <span class="privacy-title">Закрытый профиль</span>
+                                <span class="privacy-description">Профиль видят только друзья</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <small class="privacy-hint">
+                    При закрытом профиле незнакомцы увидят только ваше имя, аватар и смогут отправить заявку в друзья
+                </small>
+            </div>
+
             <div style="margin-top: 1.5rem;">
                 <button type="submit" class="submit-button" :disabled="!formValid">
                     <i class="fas fa-check mr-1"></i> Сохранить изменения
@@ -87,6 +117,5 @@
         }
     }
 </script>
-
 </body>
 </html>

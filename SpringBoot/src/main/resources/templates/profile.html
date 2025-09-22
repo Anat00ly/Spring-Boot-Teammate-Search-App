@@ -17,12 +17,17 @@
     <div class="avatar-container">
         <img th:src="${player.avatarURL != null ? player.avatarURL : '/images/default-avatar.png'}" alt="Avatar">
 
-
         <!-- Форма для текущего пользователя -->
         <form th:if="${player.id == currentUserId}" th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
             <input type="file" name="avatar" accept="image/*" required>
             <button type="submit" class="btn btn-primary">Загрузить аватар</button>
         </form>
+    </div>
+
+    <!-- Индикатор приватности для владельца -->
+    <div th:if="${player.id == currentUserId && player.private}" class="privacy-indicator">
+        <i class="fas fa-lock"></i>
+        <span>Ваш профиль закрыт - видят только друзья</span>
     </div>
 
     <div class="tabs">
@@ -32,28 +37,145 @@
         <a th:if="${player.id == currentUserId}" th:href="@{/create-post}" class="tab-link">Создать пост</a>
     </div>
 
-    <div class="profile-item"><span class="profile-label">Имя:</span> <span th:text="${player.name}"></span></div>
-    <div class="profile-item"><span class="profile-label">Email:</span> <span th:text="${player.email}"></span></div>
-    <div class="profile-item"><span class="profile-label">Дата рождения:</span> <span th:text="${player.birthday != null ? #temporals.format(player.birthday, 'dd.MM.yyyy') : 'Не указана'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Пол:</span> <span th:text="${player.gender != null ? player.gender : 'Не указан'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Страна:</span> <span th:text="${player.country != null ? player.country : 'Не указана'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Часовой пояс:</span> <span th:text="${player.timezone != null ? player.timezone : 'Не указан'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Языки:</span> <span th:text="${player.languages != null ? player.languages : 'Не указан'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Игры:</span> <span th:text="${player.games != null ? player.games : 'Не указан'}"></span></div>
-    <div class="profile-item"><span class="profile-label">Telegram:</span>
-        <span th:if="${player.tgLink != null}"><a th:href="${player.tgLink}" th:text="${player.tgLink}" target="_blank"></a></span>
-        <span th:unless="${player.tgLink != null}">Не указан</span>
+    <!-- Проверяем, должна ли отображаться полная информация -->
+    <div th:if="${canViewFullProfile}">
+        <!-- Полная информация профиля -->
+        <div class="profile-item"><span class="profile-label">Имя:</span> <span th:text="${player.name}"></span></div>
+        <div class="profile-item"><span class="profile-label">Email:</span> <span th:text="${player.email}"></span></div>
+        <div class="profile-item"><span class="profile-label">Дата рождения:</span> <span th:text="${player.birthday != null ? #temporals.format(player.birthday, 'dd.MM.yyyy') : 'Не указана'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Пол:</span> <span th:text="${player.gender != null ? player.gender : 'Не указан'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Страна:</span> <span th:text="${player.country != null ? player.country : 'Не указана'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Часовой пояс:</span> <span th:text="${player.timezone != null ? player.timezone : 'Не указан'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Языки:</span> <span th:text="${player.languages != null ? player.languages : 'Не указан'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Игры:</span> <span th:text="${player.games != null ? player.games : 'Не указан'}"></span></div>
+        <div class="profile-item"><span class="profile-label">Telegram:</span>
+            <span th:if="${player.tgLink != null}"><a th:href="${player.tgLink}" th:text="${player.tgLink}" target="_blank"></a></span>
+            <span th:unless="${player.tgLink != null}">Не указан</span>
+        </div>
     </div>
 
+    <!-- Ограниченная информация для закрытого профиля -->
+    <div th:unless="${canViewFullProfile}" class="private-profile-message">
+        <div class="private-profile-card">
+            <i class="fas fa-lock private-profile-icon"></i>
+            <h2>Профиль скрыт</h2>
+            <p>Этот пользователь ограничил доступ к своему профилю. Только друзья могут видеть полную информацию.</p>
+
+            <!-- Базовая информация -->
+            <div class="basic-info">
+                <div class="profile-item"><span class="profile-label">Имя:</span> <span th:text="${player.name}"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки управления дружбой -->
     <div th:if="${!isCurrentUser}" style="margin-top: 2rem;">
         <form th:if="${isFriend}" th:action="@{'/remove/' + ${player.id}}" method="post">
-            <button type="submit" class="button btn-red">Удалить из друзей</button>
+            <button type="submit" class="button btn-red">
+                <i class="fas fa-user-minus"></i>
+                Удалить из друзей
+            </button>
         </form>
         <form th:unless="${isFriend}" th:action="@{'/add/' + ${player.id}}" method="post">
-            <button type="submit" class="button btn-green">Добавить в друзья</button>
+            <button type="submit" class="button btn-green">
+                <i class="fas fa-user-plus"></i>
+                Добавить в друзья
+            </button>
         </form>
     </div>
 </div>
+
+<style>
+    .privacy-indicator {
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #8b5cf6;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        margin: 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .private-profile-message {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+    }
+
+    .private-profile-card {
+        text-align: center;
+        background: var(--bg-tertiary);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        max-width: 400px;
+        width: 100%;
+    }
+
+    .private-profile-icon {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .private-profile-card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .private-profile-card p {
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .basic-info {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    .basic-info .profile-item {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-green {
+        background: var(--accent-green);
+        color: white;
+    }
+
+    .btn-red {
+        background: var(--accent-red);
+        color: white;
+    }
+
+    .btn-green:hover, .btn-red:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+</style>
 
 </body>
 </html>

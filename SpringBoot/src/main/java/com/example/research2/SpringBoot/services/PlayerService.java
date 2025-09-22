@@ -25,7 +25,7 @@ public class PlayerService {
     private final PlayerRepo playerRepo;
 
     @Value("${upload.path}")
-    private String uploadPath; // например uploads/avatars
+    private String uploadPath;
 
     private static final Logger logger = LoggerFactory.getLogger(PlayersController.class);
 
@@ -66,8 +66,14 @@ public class PlayerService {
         currentPlayer.setLanguages(player.getLanguages());
         currentPlayer.setGames(player.getGames());
         currentPlayer.setTgLink(player.getTgLink());
+        currentPlayer.setPrivate(player.isPrivate()); // Добавляем обновление приватности
         playerRepo.save(currentPlayer);
     }
+
+    /**
+     * Проверяет, может ли пользователь viewer видеть полный профиль пользователя profileOwner
+     * Примечание: этот метод перенесен в PlayersController для избежания циклической зависимости
+     */
 
     public Player findByEmail(String email) {
         return findPlayerByEmail(email);
@@ -92,7 +98,6 @@ public class PlayerService {
     }
 
     public boolean verifyPlayer(String verificationToken) {
-        // Найдём пользователя по токену (нужно добавить метод в репозиторий)
         List<Player> allPlayers = playerRepo.findAll();
         for (Player player : allPlayers) {
             if (verificationToken.equals(player.getVerificationToken())) {
@@ -115,7 +120,6 @@ public class PlayerService {
             Files.createDirectories(uploadDir);
             Path filePath = uploadDir.resolve(fileName);
             file.transferTo(filePath.toFile());
-            // поправлен путь: /uploads/avatar/<filename>
             player.setAvatarURL("/uploads/avatar/" + fileName);
             playerRepo.save(player);
         }
@@ -138,7 +142,7 @@ public class PlayerService {
             }
 
             String filename = UUID.randomUUID().toString() + "_" + original;
-            Path uploadDir = Paths.get(uploadPath); // uploadPath может быть относительным или абсолютным
+            Path uploadDir = Paths.get(uploadPath);
             Files.createDirectories(uploadDir);
             Path filePath = uploadDir.resolve(filename);
             file.transferTo(filePath.toFile());

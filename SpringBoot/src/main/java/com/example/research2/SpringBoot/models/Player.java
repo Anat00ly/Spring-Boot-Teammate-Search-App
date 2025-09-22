@@ -47,6 +47,8 @@ public class Player {
     @Column(name = "avatar_url", nullable = true)
     private String avatarURL;
 
+    @Column(name = "is_private", nullable = false)
+    private boolean isPrivate = false;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Friendship> sentFriendRequest;
@@ -76,6 +78,14 @@ public class Player {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     public String getName() {

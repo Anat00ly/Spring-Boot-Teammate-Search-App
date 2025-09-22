@@ -16,8 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,9 +30,8 @@ public class PlayersController {
 
     private final PlayerService playerService;
     private final PlayerRepo playerRepo;
-    private final FriendshipService friendshipService;private static final Logger logger = LoggerFactory.getLogger(PlayersController.class);
-
-
+    private final FriendshipService friendshipService;
+    private static final Logger logger = LoggerFactory.getLogger(PlayersController.class);
 
     public PlayersController(PlayerService playerService, PlayerRepo playerRepo, FriendshipService friendshipService) {
         this.playerService = playerService;
@@ -44,7 +41,6 @@ public class PlayersController {
 
     @GetMapping("/players")
     public String players(Model model, Principal principal) {
-        // Проверяем, подтвержден ли аккаунт пользователя
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
         if (currentPlayer == null || !currentPlayer.isVerified()) {
             return "redirect:/login?error=email_not_verified";
@@ -59,7 +55,6 @@ public class PlayersController {
     public String showProfilePage(Model model, Principal principal) {
         Player player = playerService.findPlayerByEmail(principal.getName());
 
-        // Проверяем верификацию
         if (player == null || !player.isVerified()) {
             return "redirect:/login?error=email_not_verified";
         }
@@ -68,6 +63,7 @@ public class PlayersController {
         model.addAttribute("currentUserId", player.getId());
         model.addAttribute("isCurrentUser", true);
         model.addAttribute("isFriend", false);
+        model.addAttribute("canViewFullProfile", true); // Владелец всегда видит свой профиль
 
         return "profile";
     }
@@ -76,7 +72,6 @@ public class PlayersController {
     public String viewPlayerPage(@PathVariable Long id, Model model, Principal principal) {
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
 
-        // Проверяем верификацию текущего пользователя
         if (currentPlayer == null || !currentPlayer.isVerified()) {
             return "redirect:/login?error=email_not_verified";
         }
@@ -95,6 +90,10 @@ public class PlayersController {
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
+        // Проверяем, может ли текущий пользователь видеть полный профиль
+        boolean canViewFullProfile = canViewFullProfile(currentPlayer, viewedPlayer, isFriend);
+        model.addAttribute("canViewFullProfile", canViewFullProfile);
+
         List<Player> friends = friendshipService.getFriends(viewedPlayer);
         model.addAttribute("friends", friends != null ? friends : new ArrayList<>());
 
@@ -110,7 +109,6 @@ public class PlayersController {
     public String showSettingsPage(Model model, Principal principal) {
         Player player = playerService.findPlayerByEmail(principal.getName());
 
-        // Проверяем верификацию
         if (player == null || !player.isVerified()) {
             return "redirect:/login?error=email_not_verified";
         }
@@ -127,13 +125,12 @@ public class PlayersController {
     public String saveSettings(@ModelAttribute("player") Player player, Principal principal) {
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
 
-        // Проверяем верификацию
         if (currentPlayer == null || !currentPlayer.isVerified()) {
             return "redirect:/login?error=email_not_verified";
         }
 
         playerService.updatePlayer(currentPlayer.getId(), player);
-        return "redirect:/settings";
+        return "redirect:/settings?success=true";
     }
 
     @PostMapping("/profile/avatar")
@@ -143,16 +140,11 @@ public class PlayersController {
         }
 
         try {
-            // берем путь из playerService (оно подхватывает значение upload.path)
-            String uploadDir = playerService.getUploadPath(); // добавим getter в сервис ниже
-
-            // создаём папку, если её нет
+            String uploadDir = playerService.getUploadPath();
             Path uploadPath = Paths.get(uploadDir);
             Files.createDirectories(uploadPath);
 
-            // защищённое имя файла
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-            // запретим попытки path traversal
             if (originalFilename.contains("..")) {
                 logger.warn("Invalid file name: {}", originalFilename);
                 return "redirect:/profile?error=invalid_name";
@@ -161,10 +153,8 @@ public class PlayersController {
             String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
             Path target = uploadPath.resolve(fileName);
 
-            // сохраняем файл
             file.transferTo(target.toFile());
 
-            // обновляем URL аватара в базе данных — публичный URL должен начинаться с /avatars/
             Player player = playerService.findByEmail(principal.getName());
             player.setAvatarURL("/avatars/" + fileName);
             playerRepo.save(player);
@@ -174,5 +164,23 @@ public class PlayersController {
             logger.error("Error uploading avatar", e);
             return "redirect:/profile?error=upload";
         }
+    }
+
+    /**
+     * Проверяет, может ли пользователь viewer видеть полный профиль пользователя profileOwner
+     */
+    private boolean canViewFullProfile(Player viewer, Player profileOwner, boolean isFriend) {
+        // Владелец профиля всегда может видеть свой профиль полностью
+        if (viewer.getId().equals(profileOwner.getId())) {
+            return true;
+        }
+
+        // Если профиль открытый, то все могут видеть
+        if (!profileOwner.isPrivate()) {
+            return true;
+        }
+
+        // Если профиль закрытый, проверяем дружбу
+        return isFriend;
     }
 }
