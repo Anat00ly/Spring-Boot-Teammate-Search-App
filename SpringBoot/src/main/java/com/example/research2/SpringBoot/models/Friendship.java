@@ -7,7 +7,7 @@
 
     @Entity
     @Table(name = "friendship",
-            uniqueConstraints =@UniqueConstraint(columnNames = {"sender_id" , "receiver_id"}))
+            uniqueConstraints = @UniqueConstraint(columnNames = {"sender_id", "receiver_id"}))
     public class Friendship {
 
         @Id
@@ -32,9 +32,7 @@
         @Column(name = "updated_at", nullable = false)
         private LocalDateTime updatedAt;
 
-        public Friendship() {
-
-        }
+        public Friendship() {}
 
         public Friendship(Player receiver, Player sender, FriendRequestStatus friendRequestStatus) {
             this.receiver = receiver;
@@ -42,68 +40,38 @@
             this.friendRequestStatus = friendRequestStatus;
         }
 
-        public Long getId() {
-            return id;
-        }
+        // — геттеры/сеттеры
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
 
-        public void setId(Long id) {
-            this.id = id;
-        }
+        public Player getReceiver() { return receiver; }
+        public void setReceiver(Player receiver) { this.receiver = receiver; }
 
-        public Player getReceiver() {
-            return receiver;
-        }
+        public Player getSender() { return sender; }
+        public void setSender(Player sender) { this.sender = sender; }
 
-        public void setReceiver(Player receiver) {
-            this.receiver = receiver;
-        }
-
-        public Player getSender() {
-            return sender;
-        }
-
-        public void setSender(Player sender) {
-            this.sender = sender;
-        }
-
-        public FriendRequestStatus getFriendRequestStatus() {
-            return friendRequestStatus;
-        }
-
+        public FriendRequestStatus getFriendRequestStatus() { return friendRequestStatus; }
         public void setFriendRequestStatus(FriendRequestStatus friendRequestStatus) {
             this.friendRequestStatus = friendRequestStatus;
         }
 
-        public LocalDateTime getCreatedAt() {
-            return createdAt;
-        }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-        public void setCreatedAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-        }
-
-        public LocalDateTime getUpdatedAt() {
-            return updatedAt;
-        }
-
-        public void setUpdatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-        }
-
-        public FriendRequestStatus getStatus() {
-            return friendRequestStatus;
-        }
-
-        public void setStatus(FriendRequestStatus friendRequestStatus) {
-            this.friendRequestStatus = friendRequestStatus;
-        }
+        public LocalDateTime getUpdatedAt() { return updatedAt; }
+        public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Friendship that = (Friendship) o;
-            return Objects.equals(id, that.id) && Objects.equals(receiver, that.receiver) && Objects.equals(sender, that.sender) && friendRequestStatus == that.friendRequestStatus && Objects.equals(createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt);
+            return Objects.equals(id, that.id)
+                    && Objects.equals(receiver, that.receiver)
+                    && Objects.equals(sender, that.sender)
+                    && friendRequestStatus == that.friendRequestStatus
+                    && Objects.equals(createdAt, that.createdAt)
+                    && Objects.equals(updatedAt, that.updatedAt);
         }
 
         @Override

@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -39,10 +40,14 @@ public class FriendshipController {
     }
 
     @PostMapping("/add/{receiverId}")
-    public String sendFriendRequest(@PathVariable Long receiverId, Principal principal) {
-        Player sender = playerService.findPlayerByEmail(principal.getName());
-
-        friendshipService.sendFriendRequest(sender.getId(), receiverId);
+    public String sendFriendRequest(@PathVariable Long receiverId, Principal principal, RedirectAttributes redirectAttributes) {
+        try {
+            Player sender = playerService.findPlayerByEmail(principal.getName());
+            friendshipService.sendFriendRequest(sender.getId(), receiverId);
+            redirectAttributes.addFlashAttribute("success", "Friend request sent successfully");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/profile/" + receiverId;
     }
 
@@ -53,6 +58,7 @@ public class FriendshipController {
                 .filter(n -> n.getId().equals(notificationId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+
         if (!notification.getReceiver().getId().equals(player.getId())) {
             throw new IllegalArgumentException("Unauthorized action");
         }
@@ -63,8 +69,9 @@ public class FriendshipController {
             throw new IllegalArgumentException("No associated friendship found");
         }
 
+        // вызываем сервис для принятия заявки и удаления уведомления
         friendshipService.acceptFriendRequest(notification.getRelatedId(), player.getId());
-        notificationService.markNotificationAsRead(notificationId, player.getId());
+
         return "redirect:/notifications";
     }
 
@@ -75,6 +82,7 @@ public class FriendshipController {
                 .filter(n -> n.getId().equals(notificationId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+
         if (!notification.getReceiver().getId().equals(player.getId())) {
             throw new IllegalArgumentException("Unauthorized action");
         }
@@ -85,25 +93,34 @@ public class FriendshipController {
             throw new IllegalArgumentException("No associated friendship found");
         }
 
+        // удаляем заявку и уведомление
         friendshipService.declineFriendRequest(notification.getRelatedId(), player.getId());
-        notificationService.markNotificationAsRead(notificationId, player.getId());
+
+        // ✅ НЕ вызываем markNotificationAsRead()
         return "redirect:/notifications";
     }
 
     @PostMapping("/remove/{friendId}")
-    public String removeFriend(@PathVariable Long friendId, Principal principal) {
+    public String removeFriend(@PathVariable Long friendId, Principal principal, RedirectAttributes redirectAttributes) {
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
         Optional<Friendship> friendshipOpt = friendshipService.findFriendshipBetween(currentPlayer.getId(), friendId);
-
-        if (friendshipOpt.isPresent()) {
-            Friendship friendship = friendshipOpt.get();
-            Long actualFriendId = friendship.getSender().getId().equals(currentPlayer.getId())
-                    ? friendship.getReceiver().getId()
-                    : friendship.getSender().getId();
-
-            boolean removed = friendshipService.removeFriend(friendship.getId(), currentPlayer.getId());
-            return "redirect:/profile/" + actualFriendId;
+        if (friendshipOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Friendship not found");
+            return "redirect:/mainPage";
         }
-        return "redirect:/mainPage";
+
+        Friendship friendship = friendshipOpt.get();
+        Long redirectId = friendship.getSender().getId().equals(currentPlayer.getId())
+                ? friendship.getReceiver().getId()
+                : friendship.getSender().getId();
+
+        try {
+            friendshipService.removeFriend(friendship.getId(), currentPlayer.getId());
+            redirectAttributes.addFlashAttribute("success", "Friend removed");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/profile/" + redirectId;
     }
+
 }

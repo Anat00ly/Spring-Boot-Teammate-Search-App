@@ -4,8 +4,10 @@ import com.example.research2.SpringBoot.models.FriendRequestStatus;
 import com.example.research2.SpringBoot.models.Friendship;
 import com.example.research2.SpringBoot.models.Player;
 import com.example.research2.SpringBoot.repositories.FriendshipRepo;
+import com.example.research2.SpringBoot.repositories.NotificationRepo;
 import com.example.research2.SpringBoot.repositories.PlayerRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,130 +20,154 @@ public class FriendshipService {
     private final PlayerRepo playerRepo;
     private final FriendshipRepo friendshipRepo;
     private final NotificationService notificationService;
+    private final NotificationRepo notificationRepo;
 
-    public FriendshipService(PlayerRepo playerRepo, FriendshipRepo friendshipRepo, NotificationService notificationService) {
+
+    public FriendshipService(PlayerRepo playerRepo, FriendshipRepo friendshipRepo, NotificationService notificationService, NotificationRepo notificationRepo) {
         this.playerRepo = playerRepo;
         this.friendshipRepo = friendshipRepo;
         this.notificationService = notificationService;
+        this.notificationRepo = notificationRepo;
     }
 
+    @Transactional
     public List<Player> getFriends(Player player) {
         List<Player> friends = new ArrayList<>();
         for (Friendship request : player.getSentFriendRequest()) {
-            if (request.getStatus() == FriendRequestStatus.ACCEPTED) {
+            if (request.getFriendRequestStatus() == FriendRequestStatus.ACCEPTED) {
                 friends.add(request.getReceiver());
             }
         }
         for (Friendship request : player.getReceivedFriendRequest()) {
-            if (request.getStatus() == FriendRequestStatus.ACCEPTED) {
+            if (request.getFriendRequestStatus() == FriendRequestStatus.ACCEPTED) {
                 friends.add(request.getSender());
             }
         }
         return friends;
     }
 
+    @Transactional
     public boolean isFriend(Player player1, Player player2) {
         List<Player> friends = getFriends(player1);
         return friends.contains(player2);
     }
 
+    @Transactional
     public boolean sendFriendRequest(Long senderId, Long receiverId) {
-        Optional<Player> senderOpt = playerRepo.findById(senderId);
-        Optional<Player> receiverOpt = playerRepo.findById(receiverId);
-
-        if (senderOpt.isEmpty()) {
-            throw new IllegalArgumentException("Sender does not exist");
-        }
-        if (receiverOpt.isEmpty()) {
-            throw new IllegalArgumentException("Receiver does not exist");
-        }
-
-        Player sender = senderOpt.get();
-        Player receiver = receiverOpt.get();
+        Player sender = playerRepo.findById(senderId)
+                .orElseThrow(() -> new IllegalArgumentException("Sender does not exist"));
+        Player receiver = playerRepo.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("Receiver does not exist"));
 
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException("You can't send request to yourself");
         }
 
-        if (friendshipRepo.existsBySenderIdAndReceiverId(senderId, receiverId)) {
-            throw new IllegalArgumentException("You are already friends or have a pending request");
+        Optional<Friendship> existing = findFriendshipBetween(senderId, receiverId);
+        if (existing.isPresent()) {
+            FriendRequestStatus status = existing.get().getFriendRequestStatus();
+            if (status == FriendRequestStatus.PENDING) {
+                throw new IllegalArgumentException("Friend request already pending");
+            } else if (status == FriendRequestStatus.ACCEPTED) {
+                throw new IllegalArgumentException("You are already friends");
+            }
         }
+
+
 
         Friendship request = new Friendship(receiver, sender, FriendRequestStatus.PENDING);
         request.setCreatedAt(LocalDateTime.now());
         request.setUpdatedAt(LocalDateTime.now());
-        friendshipRepo.save(request);
+        Friendship saved = friendshipRepo.save(request);
 
-        notificationService.createFriendRequestNotification(receiver, sender);
-
+        notificationService.createFriendRequestNotification(receiver, sender, saved.getId());
         return true;
     }
 
-    public boolean acceptFriendRequest(Long friendshipId, Long currentPlayerId) {
-        Optional<Friendship> friendshipOpt = friendshipRepo.findById(friendshipId);
-        if (friendshipOpt.isEmpty()) {
-            throw new IllegalArgumentException("Request does not exist");
+    @Transactional
+    public boolean removeFriend(Long friendshipId, Long currentPlayerId) {
+        Friendship friendship = friendshipRepo.findById(friendshipId)
+                .orElseThrow(() -> new IllegalArgumentException("Friendship not found"));
+
+        boolean isSender = friendship.getSender().getId().equals(currentPlayerId);
+        boolean isReceiver = friendship.getReceiver().getId().equals(currentPlayerId);
+        if (!isSender && !isReceiver) {
+            throw new IllegalArgumentException("Unauthorized action");
         }
 
-        Friendship friendship = friendshipOpt.get();
+        if (friendship.getFriendRequestStatus() != FriendRequestStatus.ACCEPTED) {
+            throw new IllegalArgumentException("You can only remove accepted friends");
+        }
+
+        Player otherPlayer = isSender ? friendship.getReceiver() : friendship.getSender();
+        Player currentPlayer = isSender ? friendship.getSender() : friendship.getReceiver();
+
+        notificationService.createFriendRemovedNotification(otherPlayer, currentPlayer);
+        friendshipRepo.delete(friendship);
+        return true;
+    }
+
+
+    @Transactional
+    public boolean acceptFriendRequest(Long friendshipId, Long currentPlayerId) {
+        Friendship friendship = friendshipRepo.findById(friendshipId)
+                .orElseThrow(() -> new IllegalArgumentException("Request does not exist"));
+
         if (!friendship.getReceiver().getId().equals(currentPlayerId)) {
             throw new IllegalArgumentException("Unauthorized action");
         }
-        if (friendship.getStatus() != FriendRequestStatus.PENDING) {
+        if (friendship.getFriendRequestStatus() != FriendRequestStatus.PENDING) {
             throw new IllegalArgumentException("Request cannot be accepted");
         }
 
-        friendship.setStatus(FriendRequestStatus.ACCEPTED);
+        friendship.setFriendRequestStatus(FriendRequestStatus.ACCEPTED);
         friendship.setUpdatedAt(LocalDateTime.now());
         friendshipRepo.save(friendship);
 
+        // создаём уведомление о принятии заявки
         notificationService.createFriendAcceptedNotification(friendship.getSender(), friendship.getReceiver());
+
+        // ✅ удаляем уведомление о запросе дружбы
+        notificationService.deleteNotificationByRelatedId(friendshipId);
+
 
         return true;
     }
 
-    public boolean declineFriendRequest(Long friendshipId, Long currentPlayerId) {
-        Optional<Friendship> friendshipOpt = friendshipRepo.findById(friendshipId);
-        if (friendshipOpt.isEmpty()) {
-            throw new IllegalArgumentException("Request does not exist");
-        }
+    @Transactional
+    public void declineFriendRequest(Long friendshipId, Long currentPlayerId) {
+        Friendship friendship = friendshipRepo.findById(friendshipId)
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
-        Friendship friendship = friendshipOpt.get();
         if (!friendship.getReceiver().getId().equals(currentPlayerId)) {
             throw new IllegalArgumentException("Unauthorized action");
         }
-        if (friendship.getStatus() != FriendRequestStatus.PENDING) {
-            throw new IllegalArgumentException("Request cannot be declined");
-        }
 
-        friendship.setStatus(FriendRequestStatus.DECLINED);
-        friendship.setUpdatedAt(LocalDateTime.now());
-        friendshipRepo.save(friendship);
+        // удаляем уведомление
+        notificationService.deleteNotificationByRelatedId(friendshipId);
 
-        return true;
+        // удаляем заявку в друзья
+        friendshipRepo.delete(friendship);
     }
 
+
+    @Transactional
     public Optional<Friendship> findFriendshipBetween(Long player1Id, Long player2Id) {
         return friendshipRepo.findBySenderIdAndReceiverId(player1Id, player2Id)
                 .or(() -> friendshipRepo.findBySenderIdAndReceiverId(player2Id, player1Id));
     }
 
-    public boolean removeFriend(Long friendshipId, Long currentPlayerId) {
-        Optional<Friendship> friendshipOpt = friendshipRepo.findById(friendshipId);
-        if (friendshipOpt.isEmpty()) {
-            System.out.println("Friendship not found for ID: " + friendshipId);
-            return false;
-        }
 
-        Friendship friendship = friendshipOpt.get();
-        System.out.println("Removing friendship with ID: " + friendship.getId() + " between sender ID: " + friendship.getSender().getId() + " and receiver ID: " + friendship.getReceiver().getId());
-
-        Player recipient = friendship.getSender().getId().equals(currentPlayerId) ? friendship.getReceiver() : friendship.getSender();
-        notificationService.createFriendRemovedNotification(recipient, friendship.getSender().getId().equals(currentPlayerId) ? friendship.getSender() : friendship.getReceiver());
-
-        friendshipRepo.delete(friendship);
-        System.out.println("Friendship deleted successfully");
-
-        return true;
+    @Transactional
+    public boolean hasPendingRequest(Long senderId, Long receiverId) {
+        return friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(senderId, receiverId, FriendRequestStatus.PENDING) ||
+                friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(receiverId, senderId, FriendRequestStatus.PENDING);
     }
+
+    @Transactional
+    public boolean areFriends(Long player1Id, Long player2Id) {
+        return friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(player1Id, player2Id, FriendRequestStatus.ACCEPTED) ||
+                friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(player2Id, player1Id, FriendRequestStatus.ACCEPTED);
+    }
+
 }

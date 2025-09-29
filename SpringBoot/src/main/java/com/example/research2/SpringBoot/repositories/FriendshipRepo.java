@@ -1,5 +1,6 @@
 package com.example.research2.SpringBoot.repositories;
 
+import com.example.research2.SpringBoot.models.FriendRequestStatus;
 import com.example.research2.SpringBoot.models.Friendship;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +13,7 @@ public interface FriendshipRepo extends JpaRepository<Friendship, Long> {
         Optional<Friendship> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
 
+        boolean existsBySenderIdAndReceiverIdAndFriendRequestStatus(Long senderId,
+                                                                    Long receiverId,
+                                                                    FriendRequestStatus friendRequestStatus);
 }
