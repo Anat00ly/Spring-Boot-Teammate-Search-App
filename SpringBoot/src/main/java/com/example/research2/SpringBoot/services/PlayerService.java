@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -161,5 +162,21 @@ public class PlayerService {
     public void updatePassword(Player player, String newPassword, PasswordEncoder passwordEncoder) {
         player.setPassword(passwordEncoder.encode(newPassword));
         playerRepo.save(player);
+    }
+
+    public void updateLastActive(Long id){
+        Player player = playerRepo.findById(id).orElse(null);
+        if(player != null){
+            player.setLastActive(LocalDateTime.now());
+            playerRepo.save(player);
+        }
+    }
+
+    public boolean isOnline(Player player){
+        if(player.getLastActive() != null && player.getLastActive().isAfter(LocalDateTime.now()
+                .minusMinutes(2))){
+            return true;
+        }
+        return false;
     }
 }

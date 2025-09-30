@@ -13,16 +13,23 @@
 <div class="container">
     <h1>Профиль пользователя: <span th:text="${player.name}"></span></h1>
 
-    <!-- Аватар -->
     <div class="avatar-container">
-        <img th:src="${player.avatarURL != null ? player.avatarURL : '/images/default-avatar.png'}" alt="Avatar">
+        <div style="position: relative; display: inline-block;">
+            <img th:src="${player.avatarURL != null ? player.avatarURL : '/images/default-avatar.png'}"
+                 alt="Avatar" style="width:150px; height:150px; border-radius:50%; border:2px solid var(--border-color); object-fit:cover;">
+
+            <!-- Индикатор онлайн/оффлайн в правом нижнем углу аватарки -->
+            <span th:text="${@playerService.isOnline(player)} ? '🟢' : '⚪'"
+                  style="position: absolute; bottom: 5px; right: 5px; font-size: 1.5rem;"></span>
+        </div>
 
         <!-- Форма для текущего пользователя -->
-        <form th:if="${player.id == currentUserId}" th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
+        <form th:if="${player.id == currentUserId}" th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data" style="margin-top: 1rem;">
             <input type="file" name="avatar" accept="image/*" required>
             <button type="submit" class="btn btn-primary">Загрузить аватар</button>
         </form>
     </div>
+
 
     <!-- Индикатор приватности для владельца -->
     <div th:if="${player.id == currentUserId && player.private}" class="privacy-indicator">

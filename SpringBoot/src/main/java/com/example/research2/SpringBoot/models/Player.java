@@ -3,6 +3,7 @@ package com.example.research2.SpringBoot.models;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,9 @@ public class Player {
     private String verificationToken;
 
     private boolean isVerified;
+
+    @Column(name = "last_active")
+    private LocalDateTime lastActive;
 
     @Column(name = "reset_token")
     private String resetToken;
@@ -206,6 +210,14 @@ public class Player {
 
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
+    }
+
+    public LocalDateTime getLastActive() {
+        return lastActive;
+    }
+
+    public void setLastActive(LocalDateTime lastActive) {
+        this.lastActive = lastActive;
     }
 
     @Override
