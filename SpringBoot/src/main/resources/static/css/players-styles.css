@@ -24,18 +24,27 @@ body {
 }
 
 .btn {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 500;
     transition: var(--transition);
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
 .btn-primary {
     background: var(--accent-purple);
     color: white;
+}
+
+.btn-primary:hover {
+    background: #7c3aed;
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -44,27 +53,152 @@ body {
     border: 1px solid var(--border-color);
 }
 
+.btn-secondary:hover {
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.1);
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    margin-bottom: 2rem;
     color: var(--text-primary);
+    font-weight: 600;
 }
 
 h2 {
     font-size: 1.4rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--text-primary);
+}
+
+/* Контейнер фильтров */
+.filters-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Форма фильтров */
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Поиск */
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Сетка фильтров */
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* Группа фильтра */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.filter-group label i {
+    color: var(--accent-purple);
+}
+
+/* Инпуты и селекты */
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.filter-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.filter-select {
+    cursor: pointer;
+}
+
+.filter-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* Действия с фильтрами */
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 /* Контейнер для игроков */
 .players-container {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
 }
 
 /* Карточки игроков */
@@ -76,34 +210,108 @@ h2 {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.25rem;
+    padding: 1.5rem;
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .player-card:hover {
     border-color: var(--accent-purple);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
 }
 
-.player-info {
-    background: rgba(139, 92, 246, 0.05);
-    padding: 0.75rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    line-height: 1.6;
+/* Заголовок карточки игрока */
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
-.player-info strong {
+.player-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.player-name i {
     color: var(--accent-purple);
 }
 
+.player-badge {
+    padding: 0.25rem 0.75rem;
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent-purple);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Информация об игроке */
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 8px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.info-item i {
+    color: var(--accent-purple);
+    min-width: 1.25rem;
+    margin-top: 0.15rem;
+}
+
+.info-item strong {
+    color: var(--text-primary);
+    min-width: 120px;
+}
+
+.info-item span {
+    color: var(--text-secondary);
+}
+
+/* Теги */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    padding: 0.25rem 0.75rem;
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent-purple);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+/* Ссылка на профиль */
 .player-link {
     color: var(--accent-purple);
     text-decoration: none;
     font-weight: 500;
-    display: inline-block;
-    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
     background: rgba(139, 92, 246, 0.1);
     border-radius: 8px;
     transition: var(--transition);
@@ -115,13 +323,13 @@ h2 {
 }
 
 .player-link i {
-    margin-right: 0.5rem;
+    font-size: 0.9rem;
 }
 
 /* Сообщение когда нет игроков */
 .no-players-message {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 3rem 1.5rem;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -129,7 +337,7 @@ h2 {
 }
 
 .no-players-message i {
-    font-size: 3rem;
+    font-size: 3.5rem;
     color: var(--text-secondary);
     margin-bottom: 1rem;
     display: block;
@@ -153,6 +361,9 @@ h2 {
     padding: 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 /* Утилиты */
@@ -163,19 +374,74 @@ h2 {
 /* Адаптивность */
 @media (max-width: 768px) {
     .container {
-        padding: 0.5rem;
+        padding: 1rem;
     }
 
     h1 {
         font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filters-container {
+        padding: 1rem;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
     }
 
     .player-card {
         padding: 1rem;
     }
 
+    .player-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .player-info {
-        padding: 0.5rem;
-        font-size: 0.85rem;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-item strong {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .search-input {
+        font-size: 0.9rem;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+    }
+
+    .player-name {
+        font-size: 1.1rem;
+    }
+
+    .no-players-message {
+        padding: 2rem 1rem;
+    }
+
+    .no-players-message i {
+        font-size: 2.5rem;
     }
 }

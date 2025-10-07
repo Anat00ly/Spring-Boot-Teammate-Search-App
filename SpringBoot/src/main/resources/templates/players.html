@@ -16,11 +16,159 @@
 
     <div th:if="${error}" class="error-box" th:text="${error}"></div>
 
+    <!-- Форма поиска и фильтров -->
+    <div class="filters-container">
+        <form th:action="@{/players}" method="get" class="filters-form">
+
+            <!-- Поиск по имени -->
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                        type="text"
+                        name="name"
+                        th:value="${param.name}"
+                        placeholder="Поиск по имени..."
+                        class="search-input"
+                >
+            </div>
+
+            <!-- Фильтры -->
+            <div class="filters-grid">
+
+                <!-- Пол -->
+                <div class="filter-group">
+                    <label for="gender">
+                        <i class="fas fa-venus-mars"></i>
+                        Пол
+                    </label>
+                    <select name="gender" id="gender" class="filter-select">
+                        <option value="">Все</option>
+                        <option value="MALE" th:selected="${param.gender == 'MALE'}">Мужской</option>
+                        <option value="FEMALE" th:selected="${param.gender == 'FEMALE'}">Женский</option>
+                        <option value="OTHER" th:selected="${param.gender == 'OTHER'}">Другое</option>
+                    </select>
+                </div>
+
+                <!-- Страна -->
+                <div class="filter-group">
+                    <label for="country">
+                        <i class="fas fa-globe"></i>
+                        Страна
+                    </label>
+                    <input
+                            type="text"
+                            name="country"
+                            id="country"
+                            th:value="${param.country}"
+                            placeholder="Например: Россия"
+                            class="filter-input"
+                    >
+                </div>
+
+                <!-- Часовой пояс -->
+                <div class="filter-group">
+                    <label for="timezone">
+                        <i class="fas fa-clock"></i>
+                        Часовой пояс
+                    </label>
+                    <input
+                            type="text"
+                            name="timezone"
+                            id="timezone"
+                            th:value="${param.timezone}"
+                            placeholder="Например: UTC+3"
+                            class="filter-input"
+                    >
+                </div>
+
+                <!-- Язык -->
+                <div class="filter-group">
+                    <label for="language">
+                        <i class="fas fa-language"></i>
+                        Язык
+                    </label>
+                    <input
+                            type="text"
+                            name="language"
+                            id="language"
+                            th:value="${param.language}"
+                            placeholder="Например: Русский"
+                            class="filter-input"
+                    >
+                </div>
+
+                <!-- Игра -->
+                <div class="filter-group">
+                    <label for="game">
+                        <i class="fas fa-gamepad"></i>
+                        Игра
+                    </label>
+                    <input
+                            type="text"
+                            name="game"
+                            id="game"
+                            th:value="${param.game}"
+                            placeholder="Например: CS:GO"
+                            class="filter-input"
+                    >
+                </div>
+
+                <!-- Возраст от -->
+                <div class="filter-group">
+                    <label for="ageFrom">
+                        <i class="fas fa-calendar"></i>
+                        Возраст от
+                    </label>
+                    <input
+                            type="number"
+                            name="ageFrom"
+                            id="ageFrom"
+                            th:value="${param.ageFrom}"
+                            placeholder="18"
+                            min="0"
+                            max="100"
+                            class="filter-input"
+                    >
+                </div>
+
+                <!-- Возраст до -->
+                <div class="filter-group">
+                    <label for="ageTo">
+                        <i class="fas fa-calendar-check"></i>
+                        Возраст до
+                    </label>
+                    <input
+                            type="number"
+                            name="ageTo"
+                            id="ageTo"
+                            th:value="${param.ageTo}"
+                            placeholder="65"
+                            min="0"
+                            max="100"
+                            class="filter-input"
+                    >
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Применить фильтры
+                </button>
+                <a th:href="@{/players}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+
     <!-- Сообщение если нет игроков -->
     <div th:if="${#lists.isEmpty(players)}" class="no-players-message">
         <i class="fas fa-users"></i>
         <h2>Игроков не найдено</h2>
-        <p>В списке нет других игроков. Станьте первым, кто найдёт друзей для игры!</p>
+        <p>По вашему запросу игроков не найдено. Попробуйте изменить параметры поиска.</p>
     </div>
 
     <!-- Список игроков -->
@@ -29,14 +177,66 @@
 
         <div class="space-y-4">
             <div th:each="player : ${players}" class="player-card">
-                <div class="player-info">
-                    <strong>Имя:</strong> <span th:text="${player.name}">N/A</span><br>
-                    <strong>Email:</strong> <span th:text="${player.email}">N/A</span><br>
+                <div class="player-header">
+                    <h3 class="player-name">
+                        <i class="fas fa-user-circle"></i>
+                        <span th:text="${player.name}">N/A</span>
+                    </h3>
+                    <span th:if="${player.gender}" class="player-badge" th:text="${player.gender}">Gender</span>
                 </div>
+
+                <div class="player-info">
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <strong>Email:</strong>
+                        <span th:text="${player.email}">N/A</span>
+                    </div>
+
+                    <div th:if="${player.birthday}" class="info-item">
+                        <i class="fas fa-birthday-cake"></i>
+                        <strong>Дата рождения:</strong>
+                        <span th:text="${#temporals.format(player.birthday, 'dd.MM.yyyy')}">N/A</span>
+                    </div>
+
+                    <div th:if="${player.country}" class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <strong>Страна:</strong>
+                        <span th:text="${player.country}">N/A</span>
+                    </div>
+
+                    <div th:if="${player.timezone}" class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <strong>Часовой пояс:</strong>
+                        <span th:text="${player.timezone}">N/A</span>
+                    </div>
+
+                    <div th:if="${player.languages != null && !#lists.isEmpty(player.languages)}" class="info-item">
+                        <i class="fas fa-language"></i>
+                        <strong>Языки:</strong>
+                        <span class="tags">
+                            <span th:each="lang, iterStat : ${player.languages}" class="tag">
+                                <span th:text="${lang}">Language</span>
+                                <span th:if="${!iterStat.last}">, </span>
+                            </span>
+                        </span>
+                    </div>
+
+                    <div th:if="${player.games != null && !#lists.isEmpty(player.games)}" class="info-item">
+                        <i class="fas fa-gamepad"></i>
+                        <strong>Игры:</strong>
+                        <span class="tags">
+                            <span th:each="game, iterStat : ${player.games}" class="tag">
+                                <span th:text="${game}">Game</span>
+                                <span th:if="${!iterStat.last}">, </span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
                 <a th:href="@{/profile/{id}(id=${player.id})}" class="player-link">
-                    <i class="fas fa-user mr-1"></i>
-                    <span th:text="${player.name}">Имя</span>
-                    → Посмотреть профиль
+                    <i class="fas fa-user"></i>
+                    <span>Посмотреть профиль</span>
+                    <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </div>

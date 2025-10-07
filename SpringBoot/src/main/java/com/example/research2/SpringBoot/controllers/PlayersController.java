@@ -40,14 +40,36 @@ public class PlayersController {
     }
 
     @GetMapping("/players")
-    public String players(Model model, Principal principal) {
+    public String players(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String timezone,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) String game,
+            @RequestParam(required = false) Integer ageFrom,
+            @RequestParam(required = false) Integer ageTo,
+            Model model,
+            Principal principal) {
+
         Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
         if (currentPlayer == null || !currentPlayer.isVerified()) {
             return "redirect:/login?error=email_not_verified";
         }
 
-        List<Player> players = playerService.findAllExceptCurrentPlayer(principal.getName());
-        model.addAttribute("players", players);
+        // Если нет параметров поиска - показываем всех игроков
+        if (name == null && gender == null && country == null && timezone == null &&
+                language == null && game == null && ageFrom == null && ageTo == null) {
+            List<Player> players = playerService.findAllExceptCurrentPlayer(principal.getName());
+            model.addAttribute("players", players);
+        } else {
+            // Если есть параметры - применяем фильтры
+            List<Player> players = playerService.searchPlayers(
+                    principal.getName(), name, gender, country, timezone, language, game, ageFrom, ageTo
+            );
+            model.addAttribute("players", players);
+        }
+
         return "players";
     }
 
@@ -63,7 +85,7 @@ public class PlayersController {
         model.addAttribute("currentUserId", player.getId());
         model.addAttribute("isCurrentUser", true);
         model.addAttribute("isFriend", false);
-        model.addAttribute("canViewFullProfile", true); // Владелец всегда видит свой профиль
+        model.addAttribute("canViewFullProfile", true);
 
         return "profile";
     }
@@ -90,7 +112,6 @@ public class PlayersController {
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
-        // Проверяем, может ли текущий пользователь видеть полный профиль
         boolean canViewFullProfile = canViewFullProfile(currentPlayer, viewedPlayer, isFriend);
         model.addAttribute("canViewFullProfile", canViewFullProfile);
 
@@ -166,21 +187,15 @@ public class PlayersController {
         }
     }
 
-    /**
-     * Проверяет, может ли пользователь viewer видеть полный профиль пользователя profileOwner
-     */
     private boolean canViewFullProfile(Player viewer, Player profileOwner, boolean isFriend) {
-        // Владелец профиля всегда может видеть свой профиль полностью
         if (viewer.getId().equals(profileOwner.getId())) {
             return true;
         }
 
-        // Если профиль открытый, то все могут видеть
         if (!profileOwner.isPrivate()) {
             return true;
         }
 
-        // Если профиль закрытый, проверяем дружбу
         return isFriend;
     }
 }

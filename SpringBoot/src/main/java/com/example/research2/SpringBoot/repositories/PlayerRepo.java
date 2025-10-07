@@ -9,10 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface PlayerRepo extends JpaRepository<Player, Long> {
-    Optional<Player> findByName(String name);
+    List<Player> findByName(String name);
     Optional<Player> findByEmail(String Email);
     boolean existsByEmail(String email);
     List<Player> findAllByEmailNot(String email);
     Optional<Player> findById(Long id);
+    List<Player> findAll();
 
 }

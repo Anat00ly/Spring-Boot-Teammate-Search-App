@@ -16,9 +16,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+
 
 @Service
 public class PlayerService {
@@ -45,6 +50,39 @@ public class PlayerService {
                 .filter(Player::isVerified)
                 .toList();
     }
+
+    public List<Player> searchPlayers(String currentUserEmail, String name, String gender, String country,
+                                      String timezone, String language, String game,
+                                      Integer ageFrom, Integer ageTo) {
+        return playerRepo.findAll().stream()
+                .filter(p -> !p.getEmail().equals(currentUserEmail)) // Исключаем текущего пользователя
+                .filter(p -> name == null || name.isEmpty() ||
+                        p.getName().toLowerCase().contains(name.toLowerCase()))
+                .filter(p -> gender == null || gender.isEmpty() ||
+                        p.getGender().equals(gender))
+                .filter(p -> country == null || country.isEmpty() ||
+                        (p.getCountry() != null && p.getCountry().toLowerCase().contains(country.toLowerCase())))
+                .filter(p -> timezone == null || timezone.isEmpty() ||
+                        (p.getTimezone() != null && p.getTimezone().contains(timezone)))
+                .filter(p -> language == null || language.isEmpty() ||
+                        (p.getLanguages() != null && p.getLanguages().toLowerCase().contains(language.toLowerCase())))
+                .filter(p -> game == null || game.isEmpty() ||
+                        (p.getGames() != null && p.getGames().toLowerCase().contains(game.toLowerCase())))
+                .filter(p -> ageFrom == null ||
+                        (p.getBirthday() != null && getAge(p.getBirthday()) >= ageFrom))
+                .filter(p -> ageTo == null ||
+                        (p.getBirthday() != null && getAge(p.getBirthday()) <= ageTo))
+                .collect(Collectors.toList());
+    }
+
+    private int getAge(LocalDate birthday) {
+        if (birthday == null) {
+            return 0;
+        }
+        return Period.between(birthday, LocalDate.now()).getYears();
+    }
+
+
 
     public Player findPlayerByEmail(String email) {
         return playerRepo.findByEmail(email).orElse(null);
