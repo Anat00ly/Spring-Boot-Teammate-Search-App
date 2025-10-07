@@ -17,48 +17,95 @@
 
     <div x-data="settingsForm()">
         <form th:action="@{/settings}" th:object="${player}" method="post" @input="validateForm()">
-            <label for="name"><i class="fas fa-user mr-1"></i> Имя:</label>
-            <input type="text" id="name" th:field="*{name}" required>
-
-            <label for="birthDate"><i class="fas fa-calendar-alt mr-1"></i> Дата рождения:</label>
-            <input type="date" id="birthDate" th:field="*{birthday}">
-
-            <label><i class="fas fa-venus-mars mr-1"></i> Пол:</label>
-            <div class="radio-group">
-                <label><input type="radio" th:field="*{gender}" value="Мужской"> Мужской</label>
-                <label><input type="radio" th:field="*{gender}" value="Женский"> Женский</label>
-                <label><input type="radio" th:field="*{gender}" value="Другое"> Другое</label>
+            <div class="form-group">
+                <label for="name"><i class="fas fa-user mr-1"></i> Имя:</label>
+                <input type="text" id="name" th:field="*{name}" required maxlength="50">
+                <div class="char-counter" x-data="{ count: 0 }" x-init="count = $el.previousElementSibling.value.length">
+                    <span x-text="count"></span>/50
+                </div>
             </div>
 
-            <label for="country"><i class="fas fa-globe mr-1"></i> Страна:</label>
-            <select id="country" th:field="*{country}">
-                <option value="">Выберите страну</option>
-                <option th:each="country : ${countries}" th:value="${country}" th:text="${country}"></option>
-            </select>
+            <div class="form-group">
+                <label for="birthDate"><i class="fas fa-calendar-alt mr-1"></i> Дата рождения:</label>
+                <input type="date" id="birthDate" name="birthday"
+                       th:value="${player.birthday != null ? #temporals.format(player.birthday, 'yyyy-MM-dd') : ''}">
+            </div>
 
-            <label for="timezone"><i class="fas fa-clock mr-1"></i> Часовой пояс:</label>
-            <select id="timezone" th:field="*{timezone}">
-                <option value="">Выберите часовой пояс</option>
-                <option th:each="timezone : ${timezones}" th:value="${timezone}" th:text="${timezone}"></option>
-            </select>
+            <div class="form-group">
+                <label><i class="fas fa-venus-mars mr-1"></i> Пол:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="gender" value="Мужской" th:field="*{gender}">
+                        Мужской
+                    </label>
+                    <label>
+                        <input type="radio" name="gender" value="Женский" th:field="*{gender}">
+                        Женский
+                    </label>
+                    <label>
+                        <input type="radio" name="gender" value="Другое" th:field="*{gender}">
+                        Другое
+                    </label>
+                </div>
+            </div>
 
-            <label for="languages"><i class="fas fa-language mr-1"></i> Владение языками:</label>
-            <input type="text" id="languages" th:field="*{languages}">
+            <div class="form-group">
+                <label for="country"><i class="fas fa-globe mr-1"></i> Страна:</label>
+                <select id="country" th:field="*{country}">
+                    <option value="">Выберите страну</option>
+                    <option th:each="country : ${countries}"
+                            th:value="${country}"
+                            th:text="${country}"
+                            th:selected="${player.country == country}">
+                    </option>
+                </select>
+            </div>
 
-            <label for="games"><i class="fas fa-gamepad mr-1"></i> Игры:</label>
-            <select id="games" th:field="*{games}" multiple>
-                <option th:each="game : ${games}" th:value="${game}" th:text="${game}"></option>
-            </select>
+            <div class="form-group">
+                <label for="timezone"><i class="fas fa-clock mr-1"></i> Часовой пояс:</label>
+                <select id="timezone" th:field="*{timezone}">
+                    <option value="">Выберите часовой пояс</option>
+                    <option th:each="timezone : ${timezones}"
+                            th:value="${timezone}"
+                            th:text="${timezone}"
+                            th:selected="${player.timezone == timezone}">
+                    </option>
+                </select>
+            </div>
 
-            <label for="telegram"><i class="fab fa-telegram mr-1"></i> Telegram:</label>
-            <input type="text" id="telegram" th:field="*{tgLink}">
+            <div class="form-group">
+                <label for="languages"><i class="fas fa-language mr-1"></i> Владение языками:</label>
+                <input type="text" id="languages" th:field="*{languages}" maxlength="100" placeholder="Например: Русский, Английский">
+                <div class="char-counter" x-data="{ count: 0 }" x-init="count = $el.previousElementSibling.value.length">
+                    <span x-text="count"></span>/100
+                </div>
+            </div>
 
-            <!-- Обновленная секция приватности с двумя вариантами -->
+            <div class="form-group">
+                <label for="games"><i class="fas fa-gamepad mr-1"></i> Игры:</label>
+                <select id="games" th:field="*{games}">
+                    <option value="">Выберите игру</option>
+                    <option th:each="game : ${games}"
+                            th:value="${game}"
+                            th:text="${game}"
+                            th:selected="${player.games == game}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="telegram"><i class="fab fa-telegram mr-1"></i> Telegram:</label>
+                <input type="text" id="telegram" th:field="*{tgLink}" maxlength="50" placeholder="@username">
+                <div class="char-counter" x-data="{ count: 0 }" x-init="count = $el.previousElementSibling.value.length">
+                    <span x-text="count"></span>/50
+                </div>
+            </div>
+
             <div class="privacy-section">
                 <label><i class="fas fa-lock mr-1"></i> Приватность профиля:</label>
                 <div class="privacy-options">
                     <div class="privacy-option">
-                        <input type="radio" id="publicProfile" name="privacy" th:field="*{private}" th:value="false">
+                        <input type="radio" id="publicProfile" name="private" th:field="*{private}" th:value="false">
                         <label for="publicProfile" class="privacy-label">
                             <i class="fas fa-globe privacy-icon"></i>
                             <div class="privacy-content">
@@ -68,7 +115,7 @@
                         </label>
                     </div>
                     <div class="privacy-option">
-                        <input type="radio" id="privateProfile" name="privacy" th:field="*{private}" th:value="true">
+                        <input type="radio" id="privateProfile" name="private" th:field="*{private}" th:value="true">
                         <label for="privateProfile" class="privacy-label">
                             <i class="fas fa-lock privacy-icon"></i>
                             <div class="privacy-content">
@@ -83,7 +130,7 @@
                 </small>
             </div>
 
-            <div style="margin-top: 1.5rem;">
+            <div class="form-actions">
                 <button type="submit" class="submit-button" :disabled="!formValid">
                     <i class="fas fa-check mr-1"></i> Сохранить изменения
                 </button>
@@ -99,23 +146,48 @@
             formValid: false,
 
             init() {
-                // Проверяем валидность формы при инициализации
                 this.validateForm();
+                this.setupCharCounters();
+                this.setupRadioButtons();
             },
 
             validateForm() {
-                // Получаем все обязательные поля
                 const requiredInputs = document.querySelectorAll('input[required]');
-
-                // Проверяем, что все обязательные поля заполнены
                 this.formValid = Array.from(requiredInputs).every(input => {
                     return input.value && input.value.trim() !== '';
                 });
+            },
 
-                console.log('Form valid:', this.formValid); // Для отладки
+            setupCharCounters() {
+                document.querySelectorAll('input[maxlength]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        const counter = e.target.nextElementSibling?.querySelector('span');
+                        if (counter) {
+                            counter.textContent = e.target.value.length;
+                        }
+                    });
+                });
+            },
+
+            setupRadioButtons() {
+                // Убедимся, что радиокнопки правильно отображают выбранное значение
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    if (radio.checked) {
+                        console.log('Selected radio:', radio.name, radio.value);
+                    }
+                });
             }
         }
     }
+
+    // Дополнительная инициализация после загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        // Логируем текущие значения для отладки
+        console.log('Birthday value:', document.getElementById('birthDate').value);
+        console.log('Country value:', document.getElementById('country').value);
+        console.log('Timezone value:', document.getElementById('timezone').value);
+        console.log('Games value:', document.getElementById('games').value);
+    });
 </script>
 </body>
 </html>

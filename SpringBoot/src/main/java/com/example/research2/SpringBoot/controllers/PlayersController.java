@@ -130,7 +130,7 @@ public class PlayersController {
         }
 
         playerService.updatePlayer(currentPlayer.getId(), player);
-        return "redirect:/settings?success=true";
+        return "redirect:/profile?success=true";
     }
 
     @PostMapping("/profile/avatar")
