@@ -57,6 +57,12 @@ public class PlayersController {
             return "redirect:/login?error=email_not_verified";
         }
 
+        // Добавляем списки для выпадающих меню
+        model.addAttribute("timezones", TimezoneUtils.getAllTimezones());
+        model.addAttribute("languages", LanguageUtils.getAllLanguages());
+        model.addAttribute("countries", CountryUtils.getAllCountries()); // ДОБАВЛЕНО!
+        model.addAttribute("games", GamesUtils.getAllGames());
+
         // Если нет параметров поиска - показываем всех игроков
         if (name == null && gender == null && country == null && timezone == null &&
                 language == null && game == null && ageFrom == null && ageTo == null) {

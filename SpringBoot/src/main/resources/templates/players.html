@@ -55,14 +55,14 @@
                         <i class="fas fa-globe"></i>
                         Страна
                     </label>
-                    <input
-                            type="text"
-                            name="country"
-                            id="country"
-                            th:value="${param.country}"
-                            placeholder="Например: Россия"
-                            class="filter-input"
-                    >
+                    <select name="country" id="country" class="filter-select">
+                        <option value="">Все</option>
+                        <option th:each="c : ${countries}"
+                                th:value="${c}"
+                                th:text="${c}"
+                                th:selected="${param.country != null && param.country[0] == c}">
+                        </option>
+                    </select>
                 </div>
 
                 <!-- Часовой пояс -->
@@ -71,14 +71,14 @@
                         <i class="fas fa-clock"></i>
                         Часовой пояс
                     </label>
-                    <input
-                            type="text"
-                            name="timezone"
-                            id="timezone"
-                            th:value="${param.timezone}"
-                            placeholder="Например: UTC+3"
-                            class="filter-input"
-                    >
+                    <select name="timezone" id="timezone" class="filter-select">
+                        <option value="">Все</option>
+                        <option th:each="tz : ${timezones}"
+                                th:value="${tz}"
+                                th:text="${tz}"
+                                th:selected="${param.timezone != null && param.timezone[0] == tz}">
+                        </option>
+                    </select>
                 </div>
 
                 <!-- Язык -->
@@ -87,14 +87,14 @@
                         <i class="fas fa-language"></i>
                         Язык
                     </label>
-                    <input
-                            type="text"
-                            name="language"
-                            id="language"
-                            th:value="${param.language}"
-                            placeholder="Например: Русский"
-                            class="filter-input"
-                    >
+                    <select name="language" id="language" class="filter-select">
+                        <option value="">Все</option>
+                        <option th:each="lang : ${languages}"
+                                th:value="${lang}"
+                                th:text="${lang}"
+                                th:selected="${param.language != null && param.language[0] == lang}">
+                        </option>
+                    </select>
                 </div>
 
                 <!-- Игра -->
@@ -103,14 +103,14 @@
                         <i class="fas fa-gamepad"></i>
                         Игра
                     </label>
-                    <input
-                            type="text"
-                            name="game"
-                            id="game"
-                            th:value="${param.game}"
-                            placeholder="Например: CS:GO"
-                            class="filter-input"
-                    >
+                    <select name="game" id="game" class="filter-select">
+                        <option value="">Все</option>
+                        <option th:each="g : ${games}"
+                                th:value="${g}"
+                                th:text="${g}"
+                                th:selected="${param.game != null && param.game[0] == g}">
+                        </option>
+                    </select>
                 </div>
 
                 <!-- Возраст от -->
