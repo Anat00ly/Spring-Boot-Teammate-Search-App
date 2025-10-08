@@ -40,6 +40,10 @@ public class PlayerService {
     }
 
     public Player registerPlayer(Player player) {
+
+        if (player.getAvatarURL() == null || player.getAvatarURL().isEmpty()) {
+            player.setAvatarURL("/images/default-avatar.png"); // или путь к вашей дефолтной аватарке
+        }
         return playerRepo.save(player);
     }
 
