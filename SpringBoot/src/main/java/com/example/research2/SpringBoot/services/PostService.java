@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,5 +75,10 @@ public class PostService {
                 .filter(post -> hoursFrom == null || post.getQuantityOfHours() >= hoursFrom)
                 .filter(post -> hoursTo == null || post.getQuantityOfHours() <= hoursTo)
                 .collect(Collectors.toList());
+    }
+
+    public Post findById(Long id) {
+        Optional<Post> optionalPost = postRepo.findById(id);
+        return optionalPost.orElse(null);
     }
 }

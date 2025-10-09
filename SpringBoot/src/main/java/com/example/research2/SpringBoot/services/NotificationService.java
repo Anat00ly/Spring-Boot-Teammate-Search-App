@@ -101,4 +101,12 @@ public class NotificationService {
         notificationRepo.deleteAllByReceiverId(player.getId());
     }
 
+    public void sendRespondPostNotification(Player receiver, Player sender, Long postId){
+        String message = String.format("%s is interested in your post", sender.getName() != null ? sender.getName() : "Someone");
+        Notification notification = new Notification(receiver, sender, NotificationType.POST_RESPOND, message);
+        notification.setRelatedId(postId);
+        notification.setRead(false);
+        notificationRepo.save(notification);
+    }
+
 }

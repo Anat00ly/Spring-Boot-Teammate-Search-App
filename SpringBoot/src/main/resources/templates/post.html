@@ -10,7 +10,7 @@
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<!-- Main Content -->
+
 <main class="main-content">
     <!-- Back Button -->
     <a th:href="@{/}" class="back-button">
@@ -26,7 +26,6 @@
 
     <!-- Post Container -->
     <div th:unless="${error}" class="post-container">
-        <!-- Post Header -->
         <div class="post-header">
             <h1 class="post-title" th:text="${post.title}">Название поста</h1>
 
@@ -49,7 +48,8 @@
 
         <!-- Author Info -->
         <div class="author-info">
-            <div class="author-avatar" th:text="${post.player.name != null ? post.player.name.substring(0,1).toUpperCase() : 'U'}">U</div>
+            <div class="author-avatar"
+                 th:text="${post.player.name != null ? post.player.name.substring(0,1).toUpperCase() : 'U'}">U</div>
             <div class="author-details">
                 <div class="author-name">Автор поста</div>
                 <a th:href="@{/profile/{id}(id=${post.player.id})}" class="author-link">
@@ -59,13 +59,15 @@
             </div>
         </div>
 
-        <div th:if="${post.description != null and !post.description.isEmpty()}">
-            <h2>Описание поста</h2>
-            <div class="post-description" th:utext="${post.description}"></div>
-        </div>
-        <div th:unless="${post.description != null and !post.description.isEmpty()}">
-            <h2>Автор не добавил описание к этому посту</h2>
-        </div>
+        <!-- Description -->
+        <div class="post-content">
+            <div th:if="${post.description != null and !post.description.isEmpty()}">
+                <h2>Описание поста</h2>
+                <div class="post-description" th:utext="${post.description}"></div>
+            </div>
+            <div th:unless="${post.description != null and !post.description.isEmpty()}">
+                <h2 class="empty-description">Автор не добавил описание к этому посту</h2>
+            </div>
 
             <!-- Stats Row -->
             <div class="stats-row">
@@ -80,129 +82,76 @@
             </div>
         </div>
 
-        <!-- Post Actions (only for post owner) -->
-        <div class="post-actions" th:if="${currentUserId != null and post.player.id == currentUserId}">
-            <a th:href="@{/edit-post/{id}(id=${post.id})}" class="action-button action-edit">
-                <i class="fas fa-edit"></i>
-                Редактировать
-            </a>
-            <form th:action="@{/delete-post/{id}(id=${post.id})}" method="post"
-                  onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');"
-                  style="display: inline;">
-                <button type="submit" class="action-button action-delete">
-                    <i class="fas fa-trash"></i>
-                    Удалить
-                </button>
-            </form>
+        <!-- Post Actions -->
+        <div class="post-actions">
+            <!-- Если это владелец -->
+            <div th:if="${currentUserId != null and post.player.id == currentUserId}">
+                <a th:href="@{/edit-post/{id}(id=${post.id})}" class="action-button action-edit">
+                    <i class="fas fa-edit"></i>
+                    Редактировать
+                </a>
+                <form th:action="@{/delete-post/{id}(id=${post.id})}" method="post"
+                      onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');"
+                      style="display: inline;">
+                    <button type="submit" class="action-button action-delete">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </button>
+                </form>
+            </div>
+
+            <!-- Если это не владелец и пользователь авторизован -->
+            <div th:if="${currentUserId != null and post.player.id != currentUserId}">
+                <form th:action="@{/post/{id}/respond(id=${post.id})}" method="post" class="respond-form">
+                    <button type="submit" class="action-button btn-primary btn-respond">
+                        <i class="fas fa-reply"></i>
+                        Откликнуться
+                    </button>
+                </form>
+            </div>
+
+            <!-- Если пользователь не авторизован -->
+            <div th:if="${currentUserId == null}" class="owner-badge">
+                Войдите, чтобы откликнуться
+            </div>
         </div>
     </div>
 </main>
 
 <script>
-    // Функция для получения иконки игры
-    function getGameIcon(gameName) {
-        const gameIcons = {
-            'Counter-Strike 2': 'fas fa-crosshairs',
-            'Counter-Strike: Global Offensive': 'fas fa-crosshairs',
-            'Dota 2': 'fas fa-shield-alt',
-            'League of Legends': 'fas fa-crown',
-            'Valorant': 'fas fa-bullseye',
-            'Apex Legends': 'fas fa-mountain',
-            'Fortnite': 'fas fa-hammer',
-            'Minecraft': 'fas fa-cube',
-            'Grand Theft Auto V': 'fas fa-car',
-            'GTA V RP': 'fas fa-car',
-            'World of Warcraft': 'fas fa-dragon',
-            'Overwatch': 'fas fa-bolt',
-            'Rocket League': 'fas fa-futbol',
-            'PUBG: Battlegrounds': 'fas fa-parachute-box',
-            'PUBG Mobile': 'fas fa-mobile-alt',
-            'Call of Duty': 'fas fa-crosshairs',
-            'Destiny 2': 'fas fa-space-shuttle',
-            'Genshin Impact': 'fas fa-magic',
-            'Among Us': 'fas fa-user-secret',
-            'Fall Guys': 'fas fa-running',
-            'Dead by Daylight': 'fas fa-skull',
-            'Rust': 'fas fa-hammer',
-            'ARK: Survival Evolved': 'fas fa-dragon',
-            'ARK: Survival Ascended': 'fas fa-dragon',
-            'The Forest': 'fas fa-tree',
-            'Phasmophobia': 'fas fa-ghost',
-            'Garry\'s Mod': 'fas fa-wrench',
-            'Team Fortress 2': 'fas fa-bomb',
-            'Left 4 Dead 2': 'fas fa-zombie',
-            'Portal 2': 'fas fa-circle',
-            'Half-Life': 'fas fa-atom',
-            'Terraria': 'fas fa-pickaxe',
-            'Stardew Valley': 'fas fa-seedling',
-            'Don\'t Starve Together': 'fas fa-campfire',
-            'Sea of Thieves': 'fas fa-ship',
-            'War Thunder': 'fas fa-plane',
-            'World of Tanks': 'fas fa-tank',
-            'Euro Truck Simulator 2': 'fas fa-truck',
-            'Cities: Skylines': 'fas fa-city',
-            'Civilization VI': 'fas fa-globe',
-            'Age of Empires': 'fas fa-castle',
-            'StarCraft II': 'fas fa-rocket',
-            'Hearthstone': 'fas fa-cards',
-            'Magic: The Gathering': 'fas fa-hat-wizard',
-            'Chess.com': 'fas fa-chess',
-            'Roblox': 'fas fa-cubes',
-            'Brawl Stars': 'fas fa-star',
-            'Mobile Legends: Bang Bang': 'fas fa-mobile-alt',
-            'Free Fire': 'fas fa-fire',
-            'Clash of Clans': 'fas fa-shield',
-            'Clash Royale': 'fas fa-crown',
-            'Pokemon GO': 'fas fa-map-marker-alt',
-            'Candy Crush': 'fas fa-candy-cane'
-        };
 
-        return gameIcons[gameName] || 'fas fa-gamepad';
-    }
-
-    // Применяем иконку к игре после загрузки страницы
     document.addEventListener('DOMContentLoaded', function() {
         const gameIcon = document.querySelector('.game-icon');
         const gameText = document.querySelector('.post-game span');
-
         if (gameIcon && gameText) {
-            const gameName = gameText.textContent;
-            const iconClass = getGameIcon(gameName);
+            const iconClass = getGameIcon(gameText.textContent);
             gameIcon.className = `${iconClass} game-icon`;
         }
 
-        // Анимация появления контейнера
         const container = document.querySelector('.post-container');
         if (container) {
             container.style.opacity = '0';
             container.style.transform = 'translateY(20px)';
-
             setTimeout(() => {
                 container.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 container.style.opacity = '1';
                 container.style.transform = 'translateY(0)';
             }, 100);
         }
-    });
 
-    // Анимация кнопки удаления при подтверждении
-    document.querySelectorAll('form[onsubmit*="confirm"]').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const button = this.querySelector('.action-delete');
-            if (button) {
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Удаление...';
-                button.disabled = true;
-            }
+        // Отправка отклика
+        document.querySelectorAll('.respond-form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const btn = this.querySelector('.btn-respond');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.disabled = false;
+                }, 2000);
+            });
         });
-    });
-
-    // Плавный скролл для кнопки "Назад"
-    document.querySelector('.back-button').addEventListener('click', function(e) {
-        // Можно добавить анимацию перехода назад
-        this.style.transform = 'translateX(-4px)';
-        setTimeout(() => {
-            this.style.transform = 'translateX(0)';
-        }, 150);
     });
 </script>
 </body>

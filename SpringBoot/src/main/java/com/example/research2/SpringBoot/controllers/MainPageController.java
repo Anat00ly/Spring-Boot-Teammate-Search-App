@@ -2,6 +2,7 @@ package com.example.research2.SpringBoot.controllers;
 
 import com.example.research2.SpringBoot.models.Player;
 import com.example.research2.SpringBoot.models.Post;
+import com.example.research2.SpringBoot.services.NotificationService;
 import com.example.research2.SpringBoot.services.PlayerService;
 import com.example.research2.SpringBoot.services.PostService;
 import com.example.research2.SpringBoot.util.GamesUtils;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -20,10 +22,12 @@ public class MainPageController {
 
     private final PostService postService;
     private final PlayerService playerService;
+    private final NotificationService notificationService;
 
-    public MainPageController(PostService postService, PlayerService playerService) {
+    public MainPageController(PostService postService, PlayerService playerService, NotificationService notificationService) {
         this.postService = postService;
         this.playerService = playerService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/")
@@ -34,6 +38,11 @@ public class MainPageController {
             @RequestParam(required = false) Integer hoursTo,
             Model model,
             Principal principal) {
+
+        if(principal != null){
+            Player currentPlayer = playerService.findPlayerByEmail(principal.getName());
+            model.addAttribute("currentPlayer",currentPlayer);
+        }
 
         model.addAttribute("games",GamesUtils.getAllGames());
 
@@ -46,7 +55,6 @@ public class MainPageController {
             );
             model.addAttribute("posts", posts);
         }
-
 
         if (principal != null) {
             model.addAttribute("name", principal.getName());
@@ -185,5 +193,57 @@ public class MainPageController {
             model.addAttribute("error", "Ошибка при удалении поста: " + e.getMessage());
             return "mainPage";
         }
+    }
+
+    @PostMapping("/post/{id}/respond")
+    public String respondToPost(@PathVariable("id") Long postId,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
+        // 1️⃣ Проверяем авторизацию
+        if (principal == null) {
+            redirectAttributes.addFlashAttribute("error", "Необходимо войти, чтобы откликнуться на пост.");
+            return "redirect:/login";
+        }
+
+        try {
+            // 2️⃣ Получаем пользователя, сделавшего отклик
+            Player sender = playerService.findPlayerByEmail(principal.getName());
+            if (sender == null) {
+                redirectAttributes.addFlashAttribute("error", "Пользователь не найден.");
+                return "redirect:/";
+            }
+
+            // 3️⃣ Получаем сам пост
+            Post post = postService.findById(postId);
+            if (post == null) {
+                redirectAttributes.addFlashAttribute("error", "Пост не найден.");
+                return "redirect:/";
+            }
+
+            // 4️⃣ Получаем владельца поста
+            Player receiver = post.getPlayer();
+            if (receiver == null) {
+                redirectAttributes.addFlashAttribute("error", "Владелец поста не найден.");
+                return "redirect:/";
+            }
+
+            // 5️⃣ Проверяем, что пользователь не откликается на свой пост
+            if (receiver.getId().equals(sender.getId())) {
+                redirectAttributes.addFlashAttribute("error", "Вы не можете откликнуться на свой пост.");
+                return "redirect:/post/" + postId;
+            }
+
+            // 6️⃣ Отправляем уведомление владельцу поста
+            notificationService.sendRespondPostNotification(receiver, sender, postId);
+
+            // 7️⃣ Добавляем flash-уведомление
+            redirectAttributes.addFlashAttribute("success", "Вы успешно откликнулись на пост!");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка при отклике: " + e.getMessage());
+        }
+
+        // 8️⃣ Возвращаем пользователя обратно на главную страницу
+        return "redirect:/";
     }
 }
