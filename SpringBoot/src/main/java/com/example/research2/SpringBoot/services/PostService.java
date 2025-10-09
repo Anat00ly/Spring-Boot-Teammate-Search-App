@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -61,5 +62,17 @@ public class PostService {
             throw new RuntimeException("У вас нет прав для удаления этого поста");
         }
         postRepo.delete(currentPost);
+    }
+
+    public List<Post> searchPost(String title, String game, Integer hoursFrom, Integer hoursTo){
+        List<Post> allPosts = postRepo.findAll();
+        return allPosts.stream()
+                .filter(post -> title == null || title.isEmpty() ||
+                        post.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(post -> game == null || game.isEmpty() ||
+                        post.getGame().toLowerCase().contains(game.toLowerCase()))
+                .filter(post -> hoursFrom == null || post.getQuantityOfHours() >= hoursFrom)
+                .filter(post -> hoursTo == null || post.getQuantityOfHours() <= hoursTo)
+                .collect(Collectors.toList());
     }
 }

@@ -9,10 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -30,9 +27,27 @@ public class MainPageController {
     }
 
     @GetMapping("/")
-    public String showMainPage(Model model, Principal principal) {
-        List<Post> posts = postService.getAllPosts();
-        model.addAttribute("posts", posts);
+    public String showMainPage(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String game,
+            @RequestParam(required = false) Integer hoursFrom,
+            @RequestParam(required = false) Integer hoursTo,
+            Model model,
+            Principal principal) {
+
+        model.addAttribute("games",GamesUtils.getAllGames());
+
+        if(title == null && game == null && hoursFrom == null && hoursTo == null){
+            List<Post> posts = postService.getAllPosts();
+            model.addAttribute("posts", posts);
+        } else {
+            List<Post> posts = postService.searchPost(
+                    title,game,hoursFrom,hoursTo
+            );
+            model.addAttribute("posts", posts);
+        }
+
+
         if (principal != null) {
             model.addAttribute("name", principal.getName());
         }
