@@ -34,3 +34,42 @@
 .nav-link:hover {
     color: var(--text-primary);
 }
+
+/* ДОБАВЬТЕ эти стили для кнопок в навбаре */
+.navbar .btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.navbar .btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-purple);
+}
+
+.navbar .btn-primary {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.navbar .btn-primary:hover {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.navbar .btn-secondary {
+    background: transparent;
+    border-color: var(--border-color);
+}
+
+.navbar .btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-purple);
+}
