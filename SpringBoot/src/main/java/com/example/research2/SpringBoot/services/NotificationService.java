@@ -1,9 +1,6 @@
 package com.example.research2.SpringBoot.services;
 
-import com.example.research2.SpringBoot.models.Friendship;
-import com.example.research2.SpringBoot.models.Notification;
-import com.example.research2.SpringBoot.models.NotificationType;
-import com.example.research2.SpringBoot.models.Player;
+import com.example.research2.SpringBoot.models.*;
 import com.example.research2.SpringBoot.repositories.FriendshipRepo;
 import com.example.research2.SpringBoot.repositories.NotificationRepo;
 import org.springframework.stereotype.Service;
@@ -108,5 +105,9 @@ public class NotificationService {
         notification.setRead(false);
         notificationRepo.save(notification);
     }
+
+
+
+
 
 }

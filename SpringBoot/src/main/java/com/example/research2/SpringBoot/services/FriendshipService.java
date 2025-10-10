@@ -170,4 +170,11 @@ public class FriendshipService {
                 friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(player2Id, player1Id, FriendRequestStatus.ACCEPTED);
     }
 
+    public boolean hasPendingRequest(Player currentPlayer, Player viewedPlayer) {
+        return friendshipRepo.existsBySenderAndReceiverAndFriendRequestStatus(
+                viewedPlayer, currentPlayer, FriendRequestStatus.PENDING
+        );
+    }
+
+
 }

@@ -118,6 +118,10 @@ public class PlayersController {
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
+        // ДОБАВЛЕНО: проверка на наличие ожидающего запроса в друзья
+        boolean hasPendingRequest = friendshipService.hasPendingRequest(currentPlayer, viewedPlayer);
+        model.addAttribute("hasPendingRequest", hasPendingRequest);
+
         boolean canViewFullProfile = canViewFullProfile(currentPlayer, viewedPlayer, isFriend);
         model.addAttribute("canViewFullProfile", canViewFullProfile);
 

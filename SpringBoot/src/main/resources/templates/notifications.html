@@ -35,7 +35,56 @@
         <div class="space-y-4">
             <div th:each="notification : ${notifications}" class="notification-card"
                  th:attr="data-notification-id=${notification.id}">
-                <p class="notification-message" th:text="${notification.message}">Сообщение уведомления</p>
+                <p class="notification-message">
+                    <!-- Для запроса в друзья - заменяем имя пользователя на ссылку -->
+                    <span th:if="${notification.type.name() == 'FRIEND_REQUEST'}">
+                        <a th:href="@{/profile/{id}(id=${notification.sender.id})}"
+                           class="user-link"
+                           th:text="${notification.sender.name}">
+                            Имя пользователя
+                        </a>
+                        wants to be your friend
+                    </span>
+
+                    <!-- Для отклика на пост - заменяем имя пользователя на ссылку -->
+                    <span th:if="${notification.type.name() == 'POST_RESPOND'}">
+                        <a th:href="@{/profile/{id}(id=${notification.sender.id})}"
+                           class="user-link"
+                           th:text="${notification.sender.name}">
+                            Имя пользователя
+                        </a>
+                        is interested in your post
+                    </span>
+
+                    <!-- Для принятия запроса в друзья - заменяем имя пользователя на ссылку -->
+                    <span th:if="${notification.type.name() == 'FRIEND_ACCEPTED'}">
+                        <a th:href="@{/profile/{id}(id=${notification.sender.id})}"
+                           class="user-link"
+                           th:text="${notification.sender.name}">
+                            Имя пользователя
+                        </a>
+                        accepted your friend request
+                    </span>
+
+                    <!-- Для удаления из друзей - заменяем имя пользователя на ссылку -->
+                    <span th:if="${notification.type.name() == 'FRIEND_REMOVED'}">
+                        <a th:href="@{/profile/{id}(id=${notification.sender.id})}"
+                           class="user-link"
+                           th:text="${notification.sender.name}">
+                            Имя пользователя
+                        </a>
+                        delete you from friends
+                    </span>
+
+                    <!-- Для других типов уведомлений используем стандартное сообщение -->
+                    <span th:unless="${notification.type.name() == 'FRIEND_REQUEST' or
+                                      notification.type.name() == 'POST_RESPOND' or
+                                      notification.type.name() == 'FRIEND_ACCEPTED' or
+                                      notification.type.name() == 'FRIEND_REMOVED'}"
+                          th:text="${notification.message}">
+                        Сообщение уведомления
+                    </span>
+                </p>
                 <div class="button-group">
                     <!-- Принять -->
                     <form th:if="${notification.type.name() == 'FRIEND_REQUEST'}"

@@ -77,13 +77,22 @@
 
     <!-- Кнопки управления дружбой -->
     <div th:if="${!isCurrentUser}" style="margin-top: 2rem;">
+        <!-- Если уже друзья -->
         <form th:if="${isFriend}" th:action="@{'/remove/' + ${player.id}}" method="post">
             <button type="submit" class="button btn-red">
                 <i class="fas fa-user-minus"></i>
                 Удалить из друзей
             </button>
         </form>
-        <form th:unless="${isFriend}" th:action="@{'/add/' + ${player.id}}" method="post">
+
+        <!-- Если запрос в друзья уже отправлен -->
+        <div th:if="${hasPendingRequest}" class="pending-request-message">
+            <i class="fas fa-clock"></i>
+            <span>Вам отправлен запрос в друзья</span>
+        </div>
+
+        <!-- Если не друзья и нет ожидающего запроса -->
+        <form th:unless="${isFriend or hasPendingRequest}" th:action="@{'/add/' + ${player.id}}" method="post">
             <button type="submit" class="button btn-green">
                 <i class="fas fa-user-plus"></i>
                 Добавить в друзья
@@ -181,6 +190,23 @@
     .btn-green:hover, .btn-red:hover {
         opacity: 0.9;
         transform: translateY(-1px);
+    }
+
+    .pending-request-message {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        color: #ffc107;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .pending-request-message i {
+        font-size: 1rem;
     }
 </style>
 
