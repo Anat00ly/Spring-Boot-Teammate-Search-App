@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link th:href="@{/css/settings-styles.css}" rel="stylesheet">
     <link th:href="@{/css/navbar-styles.css}" rel="stylesheet">
+
+
+    <script th:src="@{/js/settings.js}" defer></script>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -17,6 +20,9 @@
 
     <div x-data="settingsForm()">
         <form th:action="@{/settings}" th:object="${player}" method="post" @input="validateForm()">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <!-- ВСЯ ФОРМА ОСТАЕТСЯ БЕЗ ИЗМЕНЕНИЙ -->
             <div class="form-group">
                 <label for="name"><i class="fas fa-user mr-1"></i> Имя:</label>
                 <input type="text" id="name" th:field="*{name}" required maxlength="50">
@@ -140,54 +146,6 @@
     </div>
 </div>
 
-<script>
-    function settingsForm() {
-        return {
-            formValid: false,
 
-            init() {
-                this.validateForm();
-                this.setupCharCounters();
-                this.setupRadioButtons();
-            },
-
-            validateForm() {
-                const requiredInputs = document.querySelectorAll('input[required]');
-                this.formValid = Array.from(requiredInputs).every(input => {
-                    return input.value && input.value.trim() !== '';
-                });
-            },
-
-            setupCharCounters() {
-                document.querySelectorAll('input[maxlength]').forEach(input => {
-                    input.addEventListener('input', (e) => {
-                        const counter = e.target.nextElementSibling?.querySelector('span');
-                        if (counter) {
-                            counter.textContent = e.target.value.length;
-                        }
-                    });
-                });
-            },
-
-            setupRadioButtons() {
-                // Убедимся, что радиокнопки правильно отображают выбранное значение
-                document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    if (radio.checked) {
-                        console.log('Selected radio:', radio.name, radio.value);
-                    }
-                });
-            }
-        }
-    }
-
-    // Дополнительная инициализация после загрузки DOM
-    document.addEventListener('DOMContentLoaded', function() {
-        // Логируем текущие значения для отладки
-        console.log('Birthday value:', document.getElementById('birthDate').value);
-        console.log('Country value:', document.getElementById('country').value);
-        console.log('Timezone value:', document.getElementById('timezone').value);
-        console.log('Games value:', document.getElementById('games').value);
-    });
-</script>
 </body>
 </html>

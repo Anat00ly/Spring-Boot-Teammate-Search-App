@@ -25,6 +25,7 @@
         Профиль
       </a>
       <form th:action="@{/logout}" method="post" style="display: inline;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <button type="submit" class="btn btn-secondary">Выйти</button>
       </form>
     </div>

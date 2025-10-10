@@ -7,6 +7,8 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link th:href="@{/css/create-post-styles.css}" rel="stylesheet">
   <link th:href="@{/css/navbar-styles.css}" rel="stylesheet">
+
+  <script th:src="@{/js/create-post.js}" defer></script>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -29,6 +31,7 @@
 
     <!-- Create Post Form -->
     <form th:action="@{/post}" th:object="${newPost}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <div class="form-group">
         <label class="form-label" for="title">
           <i class="fas fa-heading" style="margin-right: 0.5rem; color: var(--text-muted);"></i>
@@ -121,127 +124,5 @@
   </div>
 </main>
 
-<script>
-  // Функция для получения иконки игры
-  function getGameIcon(gameName) {
-    const gameIcons = {
-      'Counter-Strike 2': 'fas fa-crosshairs',
-      'Counter-Strike: Global Offensive': 'fas fa-crosshairs',
-      'Dota 2': 'fas fa-shield-alt',
-      'League of Legends': 'fas fa-crown',
-      'Valorant': 'fas fa-bullseye',
-      'Apex Legends': 'fas fa-mountain',
-      'Fortnite': 'fas fa-hammer',
-      'Minecraft': 'fas fa-cube',
-      'Grand Theft Auto V': 'fas fa-car',
-      'GTA V RP': 'fas fa-car',
-      'World of Warcraft': 'fas fa-dragon',
-      'Overwatch': 'fas fa-bolt',
-      'Rocket League': 'fas fa-futbol',
-      'PUBG: Battlegrounds': 'fas fa-parachute-box',
-      'PUBG Mobile': 'fas fa-mobile-alt',
-      // Добавьте больше игр по необходимости
-    };
-
-    return gameIcons[gameName] || 'fas fa-gamepad';
-  }
-
-  // Анимация появления формы
-  document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.form-container');
-    container.style.opacity = '0';
-    container.style.transform = 'translateY(20px)';
-
-    setTimeout(() => {
-      container.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      container.style.opacity = '1';
-      container.style.transform = 'translateY(0)';
-    }, 100);
-  });
-
-  // Счетчик символов для заголовка
-  const titleInput = document.getElementById('title');
-  const titleCounter = document.getElementById('title-counter');
-
-  titleInput.addEventListener('input', function() {
-    const length = this.value.length;
-    titleCounter.textContent = `${length}/20`;
-
-    if (length >= 18) {
-      titleCounter.classList.add('warning');
-    } else {
-      titleCounter.classList.remove('warning');
-    }
-  });
-
-  // Счетчик символов для описания
-  const descriptionTextarea = document.getElementById('description');
-  const descriptionCounter = document.getElementById('description-counter');
-
-  descriptionTextarea.addEventListener('input', function() {
-    const length = this.value.length;
-    descriptionCounter.textContent = `${length}/1000`;
-
-    if (length >= 900) {
-      descriptionCounter.classList.add('warning');
-    } else {
-      descriptionCounter.classList.remove('warning');
-    }
-  });
-
-  // Обработка фокуса на полях ввода
-  document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(input => {
-    input.addEventListener('focus', function() {
-      const wrapper = this.closest('.input-wrapper') || this;
-      const formGroup = this.closest('.form-group');
-
-      formGroup.style.transform = 'scale(1.02)';
-
-      const icon = wrapper.querySelector('.input-icon');
-      if (icon) {
-        icon.style.color = 'var(--accent-blue)';
-      }
-    });
-
-    input.addEventListener('blur', function() {
-      const wrapper = this.closest('.input-wrapper') || this;
-      const formGroup = this.closest('.form-group');
-
-      formGroup.style.transform = 'scale(1)';
-
-      const icon = wrapper.querySelector('.input-icon');
-      if (icon) {
-        icon.style.color = 'var(--text-muted)';
-      }
-    });
-  });
-
-  // Изменение иконки при выборе игры
-  document.getElementById('game').addEventListener('change', function() {
-    const selectedGame = this.value;
-    const icon = this.parentElement.querySelector('.input-icon');
-
-    if (selectedGame) {
-      const gameIcon = getGameIcon(selectedGame);
-      icon.className = `${gameIcon} input-icon`;
-    } else {
-      icon.className = 'fas fa-gamepad input-icon';
-    }
-  });
-
-  // Анимация кнопки при отправке
-  document.querySelector('form').addEventListener('submit', function() {
-    const button = this.querySelector('.form-button-primary');
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
-    button.disabled = true;
-  });
-
-  // Автоматический рост textarea
-  const textarea = document.getElementById('description');
-  textarea.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 300) + 'px';
-  });
-</script>
 </body>
 </html>
