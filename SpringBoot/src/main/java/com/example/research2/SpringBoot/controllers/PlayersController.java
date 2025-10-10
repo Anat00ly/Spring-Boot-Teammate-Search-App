@@ -57,19 +57,16 @@ public class PlayersController {
             return "redirect:/login?error=email_not_verified";
         }
 
-        // Добавляем списки для выпадающих меню
         model.addAttribute("timezones", TimezoneUtils.getAllTimezones());
         model.addAttribute("languages", LanguageUtils.getAllLanguages());
-        model.addAttribute("countries", CountryUtils.getAllCountries()); // ДОБАВЛЕНО!
+        model.addAttribute("countries", CountryUtils.getAllCountries());
         model.addAttribute("games", GamesUtils.getAllGames());
 
-        // Если нет параметров поиска - показываем всех игроков
         if (name == null && gender == null && country == null && timezone == null &&
                 language == null && game == null && ageFrom == null && ageTo == null) {
             List<Player> players = playerService.findAllExceptCurrentPlayer(principal.getName());
             model.addAttribute("players", players);
         } else {
-            // Если есть параметры - применяем фильтры
             List<Player> players = playerService.searchPlayers(
                     principal.getName(), name, gender, country, timezone, language, game, ageFrom, ageTo
             );
@@ -118,7 +115,6 @@ public class PlayersController {
         boolean isFriend = friendshipService.isFriend(currentPlayer, viewedPlayer);
         model.addAttribute("isFriend", isFriend);
 
-        // ДОБАВЛЕНО: проверка на наличие ожидающего запроса в друзья
         boolean hasPendingRequest = friendshipService.hasPendingRequest(currentPlayer, viewedPlayer);
         model.addAttribute("hasPendingRequest", hasPendingRequest);
 

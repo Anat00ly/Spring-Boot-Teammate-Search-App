@@ -29,8 +29,6 @@ public class NotificationController {
         Player player = playerService.findPlayerByEmail(principal.getName());
         List<Notification> notifications = notificationService.getNotificationsForPlayer(player);
         model.addAttribute("notifications", notifications);
-        model.addAttribute("name", player.getName() != null ? player.getName() : "User");
-
         return "notifications";
     }
 

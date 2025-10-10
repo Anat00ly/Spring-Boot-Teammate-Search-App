@@ -154,7 +154,6 @@
             });
         });
     });
-
     // markAllAsRead — минимально изменён, использует CSRF из meta
     async function markAllAsRead() {
         if (!confirm('Отметить все уведомления как прочитанные?')) return;
@@ -165,12 +164,13 @@
         try {
             const headers = {};
             if (csrfToken) headers[csrfHeaderName] = csrfToken;
-            const response = await fetch('/notifications/mark-all-read', {
+            const response = await fetch('/notifications/markAllAsRead', { // ИЗМЕНИЛ НА markAllAsRead
                 method: 'POST',
                 headers: headers
             });
             if (response.ok) {
-                document.querySelectorAll('[data-notification-id]').forEach(el => el.remove());
+                // Перезагружаем страницу для обновления данных
+                location.reload();
             } else {
                 alert('Ошибка при отметке уведомлений');
             }

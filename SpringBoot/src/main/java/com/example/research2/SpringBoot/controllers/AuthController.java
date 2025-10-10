@@ -1,4 +1,3 @@
-// AuthController.java - С добавлением функции восстановления пароля
 package com.example.research2.SpringBoot.controllers;
 
 import com.example.research2.SpringBoot.models.Player;
@@ -41,7 +40,6 @@ public class AuthController {
     @PostMapping("/register")
     public String performRegister(@ModelAttribute("player") Player player, Model model) {
         try {
-            // Проверяем, существует ли пользователь с таким email
             Player existingPlayer = playerRepo.findByEmail(player.getEmail()).orElse(null);
 
             if (existingPlayer != null) {
@@ -49,7 +47,6 @@ public class AuthController {
                     model.addAttribute("error", "Пользователь с таким email уже существует и подтвержден.");
                     return "register";
                 } else {
-                    // Пользователь существует, но не подтвержден - отправляем повторно верификацию
                     String verificationToken = JwtTokenUtils.generateToken(existingPlayer.getEmail());
                     existingPlayer.setVerificationToken(verificationToken);
                     playerRepo.save(existingPlayer);
@@ -60,15 +57,13 @@ public class AuthController {
                 }
             }
 
-            // Создаем нового пользователя
             player.setPassword(passwordEncoder.encode(player.getPassword()));
             String verificationToken = JwtTokenUtils.generateToken(player.getEmail());
             player.setVerificationToken(verificationToken);
-            player.setVerified(false); // Пользователь не подтвержден
+            player.setVerified(false);
 
             playerRepo.save(player);
 
-            // Отправляем письмо с верификацией
             emailService.sendVerificationEmail(player.getEmail(), verificationToken);
 
             model.addAttribute("message", "Регистрация успешна! Проверьте вашу почту для подтверждения аккаунта.");
@@ -97,7 +92,6 @@ public class AuthController {
         return "login";
     }
 
-    // Endpoint для верификации email (GET запрос из письма)
     @GetMapping("/req/signup/verify")
     public String verifyEmail(@RequestParam("token") String token, Model model) {
         try {
@@ -114,7 +108,6 @@ public class AuthController {
                 return "login";
             }
 
-            // Подтверждаем пользователя
             player.setVerificationToken(null);
             player.setVerified(true);
             playerRepo.save(player);
@@ -128,7 +121,6 @@ public class AuthController {
         }
     }
 
-    // Повторная отправка письма с подтверждением
     @PostMapping("/resend-verification")
     public String resendVerification(@RequestParam("email") String email, Model model) {
         try {
@@ -144,7 +136,6 @@ public class AuthController {
                 return "login";
             }
 
-            // Генерируем новый токен и отправляем письмо
             String verificationToken = JwtTokenUtils.generateToken(player.getEmail());
             player.setVerificationToken(verificationToken);
             playerRepo.save(player);
@@ -159,15 +150,11 @@ public class AuthController {
         }
     }
 
-    // === НОВЫЕ МЕТОДЫ ДЛЯ ВОССТАНОВЛЕНИЯ ПАРОЛЯ ===
-
-    // Показать страницу запроса восстановления пароля
     @GetMapping("/forgot-password")
     public String showForgotPasswordPage() {
         return "forgot-password";
     }
 
-    // Обработка запроса на восстановление пароля
     @PostMapping("/forgot-password")
     public String processForgotPassword(@RequestParam("email") String email, Model model) {
         try {
@@ -183,12 +170,10 @@ public class AuthController {
                 return "forgot-password";
             }
 
-            // Генерируем токен для сброса пароля
             String resetToken = JwtTokenUtils.generateToken(player.getEmail());
             player.setResetToken(resetToken);
             playerRepo.save(player);
 
-            // Отправляем email с инструкциями по восстановлению
             emailService.sendForgotPasswordEmail(player.getEmail(), resetToken);
 
             model.addAttribute("message", "Инструкции по восстановлению пароля отправлены на вашу почту.");
@@ -200,7 +185,6 @@ public class AuthController {
         }
     }
 
-    // Показать страницу сброса пароля (переход из email)
     @GetMapping("/req/reset-password")
     public String showResetPasswordPage(@RequestParam("token") String token, Model model) {
         try {
@@ -226,27 +210,23 @@ public class AuthController {
         }
     }
 
-    // Обработка сброса пароля
     @PostMapping("/req/reset-password")
     public String processResetPassword(@RequestParam("token") String token,
                                        @RequestParam("password") String password,
                                        @RequestParam("confirmPassword") String confirmPassword,
                                        Model model) {
         try {
-            // Проверка совпадения паролей
             if (!password.equals(confirmPassword)) {
                 model.addAttribute("error", "Пароли не совпадают!");
                 model.addAttribute("token", token);
                 return "reset-password";
             }
 
-            // Проверка токена
             if (!jwtTokenUtils.validateToken(token)) {
                 model.addAttribute("error", "Ссылка для сброса пароля недействительна или истекла!");
                 return "login";
             }
 
-            // Извлекаем email из токена
             String email = jwtTokenUtils.extractEmail(token);
             Player player = playerRepo.findByEmail(email).orElse(null);
 
@@ -255,9 +235,8 @@ public class AuthController {
                 return "login";
             }
 
-            // Если всё ок — обновляем пароль
             player.setPassword(passwordEncoder.encode(password));
-            player.setResetToken(null); // Можно не хранить токен, но если поле есть — обнуляем
+            player.setResetToken(null);
             playerRepo.save(player);
 
             model.addAttribute("message", "Пароль успешно обновлен! Теперь вы можете войти с новым паролем.");
@@ -269,5 +248,4 @@ public class AuthController {
             return "reset-password";
         }
     }
-
 }

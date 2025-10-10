@@ -35,7 +35,6 @@ public class FriendshipController {
         Player player = playerService.findPlayerByEmail(principal.getName());
         model.addAttribute("friends", friendshipService.getFriends(player));
         model.addAttribute("player", player);
-        model.addAttribute("name", player.getName() != null ? player.getName() : "User");
         return "friendList";
     }
 
@@ -69,9 +68,7 @@ public class FriendshipController {
             throw new IllegalArgumentException("No associated friendship found");
         }
 
-        // вызываем сервис для принятия заявки и удаления уведомления
         friendshipService.acceptFriendRequest(notification.getRelatedId(), player.getId());
-
         return "redirect:/notifications";
     }
 
@@ -93,10 +90,7 @@ public class FriendshipController {
             throw new IllegalArgumentException("No associated friendship found");
         }
 
-        // удаляем заявку и уведомление
         friendshipService.declineFriendRequest(notification.getRelatedId(), player.getId());
-
-        // ✅ НЕ вызываем markNotificationAsRead()
         return "redirect:/notifications";
     }
 
@@ -122,5 +116,4 @@ public class FriendshipController {
         }
         return "redirect:/profile/" + redirectId;
     }
-
 }

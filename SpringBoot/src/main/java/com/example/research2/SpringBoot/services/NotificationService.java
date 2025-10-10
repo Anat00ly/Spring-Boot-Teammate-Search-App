@@ -107,7 +107,10 @@ public class NotificationService {
     }
 
 
-
+    @Transactional
+    public long getUnreadNotificationsCount(Player player) {
+        return notificationRepo.countUnreadByReceiver(player);
+    }
 
 
 }

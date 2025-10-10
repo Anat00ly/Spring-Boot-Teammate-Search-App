@@ -29,13 +29,57 @@
     font-weight: 400;
     transition: var(--transition);
     padding: 0.5rem 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .nav-link:hover {
     color: var(--text-primary);
 }
 
-/* ДОБАВЬТЕ эти стили для кнопок в навбаре */
+/* Стили для бейджа уведомлений */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff3b30;
+    color: white;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-primary);
+    animation: pulse 2s infinite;
+}
+
+.notification-link {
+    position: relative;
+}
+
+/* Анимация пульсации для привлечения внимания */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 4px rgba(255, 59, 48, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+    }
+}
+
+/* Стили для кнопок в навбаре */
 .navbar .btn {
     background: var(--bg-secondary);
     color: var(--text-primary);

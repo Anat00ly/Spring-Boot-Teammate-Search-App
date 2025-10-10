@@ -56,9 +56,6 @@ public class MainPageController {
             model.addAttribute("posts", posts);
         }
 
-        if (principal != null) {
-            model.addAttribute("name", principal.getName());
-        }
         return "mainPage";
     }
 
@@ -69,7 +66,6 @@ public class MainPageController {
         }
         model.addAttribute("newPost", new Post());
         model.addAttribute("games", GamesUtils.getAllGames());
-        model.addAttribute("name", principal.getName());
         return "create-post";
     }
 
@@ -81,7 +77,6 @@ public class MainPageController {
         if (result.hasErrors()) {
             model.addAttribute("games", GamesUtils.getAllGames());
             model.addAttribute("error", "Пожалуйста, заполните все обязательные поля.");
-            model.addAttribute("name", principal.getName());
             return "create-post";
         }
         try {
@@ -93,7 +88,6 @@ public class MainPageController {
         } catch (Exception e) {
             model.addAttribute("games", GamesUtils.getAllGames());
             model.addAttribute("error", "Ошибка при создании поста: " + e.getMessage());
-            model.addAttribute("name", principal.getName());
             return "create-post";
         }
     }
@@ -103,7 +97,6 @@ public class MainPageController {
         try {
             Post post = postService.findPostById(id);
             model.addAttribute("post", post);
-            model.addAttribute("name", principal != null ? principal.getName() : null);
             model.addAttribute("currentUserId", principal != null ? playerService.findPlayerByEmail(principal.getName()).getId() : null);
             return "post";
         } catch (Exception e) {
@@ -123,13 +116,11 @@ public class MainPageController {
             if (!post.getPlayer().getId().equals(player.getId())) {
                 model.addAttribute("post", post);
                 model.addAttribute("error", "У вас нет прав для редактирования этого поста");
-                model.addAttribute("name", principal.getName());
                 model.addAttribute("currentUserId", player.getId());
                 return "post";
             }
             model.addAttribute("post", post);
             model.addAttribute("games", GamesUtils.getAllGames());
-            model.addAttribute("name", principal.getName());
             return "edit-post";
         } catch (Exception e) {
             model.addAttribute("error", "Ошибка при загрузке формы редактирования: " + e.getMessage());
@@ -148,14 +139,12 @@ public class MainPageController {
             if (!existingPost.getPlayer().getId().equals(player.getId())) {
                 model.addAttribute("post", existingPost);
                 model.addAttribute("error", "У вас нет прав для редактирования этого поста");
-                model.addAttribute("name", principal.getName());
                 model.addAttribute("currentUserId", player.getId());
                 return "post";
             }
             if (result.hasErrors()) {
                 model.addAttribute("games", GamesUtils.getAllGames());
                 model.addAttribute("error", "Пожалуйста, заполните все обязательные поля.");
-                model.addAttribute("name", principal.getName());
                 return "edit-post";
             }
             existingPost.setTitle(updatedPost.getTitle());
@@ -167,7 +156,6 @@ public class MainPageController {
         } catch (Exception e) {
             model.addAttribute("games", GamesUtils.getAllGames());
             model.addAttribute("error", "Ошибка при сохранении поста: " + e.getMessage());
-            model.addAttribute("name", principal.getName());
             return "edit-post";
         }
     }
@@ -183,7 +171,6 @@ public class MainPageController {
             if (!post.getPlayer().getId().equals(player.getId())) {
                 model.addAttribute("post", post);
                 model.addAttribute("error", "У вас нет прав для удаления этого поста");
-                model.addAttribute("name", principal.getName());
                 model.addAttribute("currentUserId", player.getId());
                 return "post";
             }
@@ -199,51 +186,42 @@ public class MainPageController {
     public String respondToPost(@PathVariable("id") Long postId,
                                 Principal principal,
                                 RedirectAttributes redirectAttributes) {
-        // 1️⃣ Проверяем авторизацию
         if (principal == null) {
             redirectAttributes.addFlashAttribute("error", "Необходимо войти, чтобы откликнуться на пост.");
             return "redirect:/login";
         }
 
         try {
-            // 2️⃣ Получаем пользователя, сделавшего отклик
             Player sender = playerService.findPlayerByEmail(principal.getName());
             if (sender == null) {
                 redirectAttributes.addFlashAttribute("error", "Пользователь не найден.");
                 return "redirect:/";
             }
 
-            // 3️⃣ Получаем сам пост
             Post post = postService.findById(postId);
             if (post == null) {
                 redirectAttributes.addFlashAttribute("error", "Пост не найден.");
                 return "redirect:/";
             }
 
-            // 4️⃣ Получаем владельца поста
             Player receiver = post.getPlayer();
             if (receiver == null) {
                 redirectAttributes.addFlashAttribute("error", "Владелец поста не найден.");
                 return "redirect:/";
             }
 
-            // 5️⃣ Проверяем, что пользователь не откликается на свой пост
             if (receiver.getId().equals(sender.getId())) {
                 redirectAttributes.addFlashAttribute("error", "Вы не можете откликнуться на свой пост.");
                 return "redirect:/post/" + postId;
             }
 
-            // 6️⃣ Отправляем уведомление владельцу поста
             notificationService.sendRespondPostNotification(receiver, sender, postId);
-
-            // 7️⃣ Добавляем flash-уведомление
             redirectAttributes.addFlashAttribute("success", "Вы успешно откликнулись на пост!");
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при отклике: " + e.getMessage());
         }
 
-        // 8️⃣ Возвращаем пользователя обратно на главную страницу
         return "redirect:/";
     }
 }
