@@ -10,25 +10,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final PlayerRepo playerRepo;
     private final PlayerService playerService;
+    private final EmailService emailService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private JwtTokenUtils jwtTokenUtils;
 
-    public AuthController(PlayerService playerService, PlayerRepo playerRepo) {
+    // Используем конструктор вместо @Autowired для EmailService
+    public AuthController(PlayerService playerService, PlayerRepo playerRepo, EmailService emailService) {
         this.playerService = playerService;
         this.playerRepo = playerRepo;
+        this.emailService = emailService;
     }
 
     @GetMapping("/register")
@@ -38,7 +43,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String performRegister(@ModelAttribute("player") Player player, Model model) {
+    public String performRegister(@ModelAttribute("player") Player player,
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
         try {
             Player existingPlayer = playerRepo.findByEmail(player.getEmail()).orElse(null);
 
@@ -51,9 +58,12 @@ public class AuthController {
                     existingPlayer.setVerificationToken(verificationToken);
                     playerRepo.save(existingPlayer);
 
+                    // АСИНХРОННАЯ отправка - пользователь не ждет
                     emailService.sendVerificationEmail(existingPlayer.getEmail(), verificationToken);
-                    model.addAttribute("message", "Письмо с подтверждением отправлено повторно. Проверьте вашу почту.");
-                    return "login";
+
+                    redirectAttributes.addFlashAttribute("message",
+                            "Письмо с подтверждением отправлено повторно. Проверьте вашу почту.");
+                    return "redirect:/login";
                 }
             }
 
@@ -64,12 +74,15 @@ public class AuthController {
 
             playerRepo.save(player);
 
+            // АСИНХРОННАЯ отправка - регистрация завершается мгновенно
             emailService.sendVerificationEmail(player.getEmail(), verificationToken);
 
-            model.addAttribute("message", "Регистрация успешна! Проверьте вашу почту для подтверждения аккаунта.");
-            return "login";
+            redirectAttributes.addFlashAttribute("message",
+                    "Регистрация успешна! Проверьте вашу почту для подтверждения аккаунта.");
+            return "redirect:/login";
 
         } catch (Exception e) {
+            logger.error("Registration error for email: {}", player.getEmail(), e);
             model.addAttribute("error", "Ошибка при регистрации: " + e.getMessage());
             return "register";
         }
@@ -93,60 +106,71 @@ public class AuthController {
     }
 
     @GetMapping("/req/signup/verify")
-    public String verifyEmail(@RequestParam("token") String token, Model model) {
+    public String verifyEmail(@RequestParam("token") String token,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
         try {
             String email = jwtTokenUtils.extractEmail(token);
             Player player = playerRepo.findByEmail(email).orElse(null);
 
             if (player == null || player.getVerificationToken() == null) {
-                model.addAttribute("error", "Неверная ссылка или токен истек!");
-                return "login";
+                redirectAttributes.addFlashAttribute("error", "Неверная ссылка или токен истек!");
+                return "redirect:/login";
             }
 
             if (!jwtTokenUtils.validateToken(token) || !player.getVerificationToken().equals(token)) {
-                model.addAttribute("error", "Неверная ссылка или токен истек!");
-                return "login";
+                redirectAttributes.addFlashAttribute("error", "Неверная ссылка или токен истек!");
+                return "redirect:/login";
             }
 
             player.setVerificationToken(null);
             player.setVerified(true);
             playerRepo.save(player);
 
-            model.addAttribute("message", "Email успешно подтвержден! Теперь вы можете войти в систему.");
-            return "login";
+            logger.info("Email verified successfully for: {}", email);
+            redirectAttributes.addFlashAttribute("message",
+                    "Email успешно подтвержден! Теперь вы можете войти в систему.");
+            return "redirect:/login";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Ошибка при подтверждении: " + e.getMessage());
-            return "login";
+            logger.error("Email verification error for token: {}", token, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка при подтверждении: " + e.getMessage());
+            return "redirect:/login";
         }
     }
 
     @PostMapping("/resend-verification")
-    public String resendVerification(@RequestParam("email") String email, Model model) {
+    public String resendVerification(@RequestParam("email") String email,
+                                     RedirectAttributes redirectAttributes) {
         try {
             Player player = playerRepo.findByEmail(email).orElse(null);
 
             if (player == null) {
-                model.addAttribute("error", "Пользователь с таким email не найден.");
-                return "register";
+                redirectAttributes.addFlashAttribute("error", "Пользователь с таким email не найден.");
+                return "redirect:/register";
             }
 
             if (player.isVerified()) {
-                model.addAttribute("message", "Ваш аккаунт уже подтвержден. Можете войти в систему.");
-                return "login";
+                redirectAttributes.addFlashAttribute("message",
+                        "Ваш аккаунт уже подтвержден. Можете войти в систему.");
+                return "redirect:/login";
             }
 
             String verificationToken = JwtTokenUtils.generateToken(player.getEmail());
             player.setVerificationToken(verificationToken);
             playerRepo.save(player);
 
+            // АСИНХРОННАЯ отправка
             emailService.sendVerificationEmail(player.getEmail(), verificationToken);
-            model.addAttribute("message", "Письмо с подтверждением отправлено повторно. Проверьте вашу почту.");
-            return "login";
+
+            redirectAttributes.addFlashAttribute("message",
+                    "Письмо с подтверждением отправлено повторно. Проверьте вашу почту.");
+            return "redirect:/login";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
-            return "register";
+            logger.error("Resend verification error for email: {}", email, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
+            return "redirect:/register";
         }
     }
 
@@ -156,32 +180,36 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+    public String processForgotPassword(@RequestParam("email") String email,
+                                        RedirectAttributes redirectAttributes) {
         try {
             Player player = playerRepo.findByEmail(email).orElse(null);
 
             if (player == null) {
-                model.addAttribute("error", "Пользователь с таким email не найден.");
-                return "forgot-password";
+                redirectAttributes.addFlashAttribute("error", "Пользователь с таким email не найден.");
+                return "redirect:/forgot-password";
             }
 
             if (!player.isVerified()) {
-                model.addAttribute("error", "Сначала подтвердите ваш email адрес.");
-                return "forgot-password";
+                redirectAttributes.addFlashAttribute("error", "Сначала подтвердите ваш email адрес.");
+                return "redirect:/forgot-password";
             }
 
             String resetToken = JwtTokenUtils.generateToken(player.getEmail());
             player.setResetToken(resetToken);
             playerRepo.save(player);
 
+            // АСИНХРОННАЯ отправка email восстановления пароля
             emailService.sendForgotPasswordEmail(player.getEmail(), resetToken);
 
-            model.addAttribute("message", "Инструкции по восстановлению пароля отправлены на вашу почту.");
-            return "login";
+            redirectAttributes.addFlashAttribute("message",
+                    "Инструкции по восстановлению пароля отправлены на вашу почту.");
+            return "redirect:/login";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
-            return "forgot-password";
+            logger.error("Forgot password error for email: {}", email, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
+            return "redirect:/forgot-password";
         }
     }
 
@@ -205,6 +233,7 @@ public class AuthController {
             return "reset-password";
 
         } catch (Exception e) {
+            logger.error("Reset password token validation error: {}", token, e);
             model.addAttribute("error", "Ошибка при проверке токена: " + e.getMessage());
             return "login";
         }
@@ -214,7 +243,8 @@ public class AuthController {
     public String processResetPassword(@RequestParam("token") String token,
                                        @RequestParam("password") String password,
                                        @RequestParam("confirmPassword") String confirmPassword,
-                                       Model model) {
+                                       Model model,
+                                       RedirectAttributes redirectAttributes) {
         try {
             if (!password.equals(confirmPassword)) {
                 model.addAttribute("error", "Пароли не совпадают!");
@@ -223,26 +253,30 @@ public class AuthController {
             }
 
             if (!jwtTokenUtils.validateToken(token)) {
-                model.addAttribute("error", "Ссылка для сброса пароля недействительна или истекла!");
-                return "login";
+                redirectAttributes.addFlashAttribute("error",
+                        "Ссылка для сброса пароля недействительна или истекла!");
+                return "redirect:/login";
             }
 
             String email = jwtTokenUtils.extractEmail(token);
             Player player = playerRepo.findByEmail(email).orElse(null);
 
             if (player == null) {
-                model.addAttribute("error", "Пользователь не найден!");
-                return "login";
+                redirectAttributes.addFlashAttribute("error", "Пользователь не найден!");
+                return "redirect:/login";
             }
 
             player.setPassword(passwordEncoder.encode(password));
             player.setResetToken(null);
             playerRepo.save(player);
 
-            model.addAttribute("message", "Пароль успешно обновлен! Теперь вы можете войти с новым паролем.");
-            return "login";
+            logger.info("Password reset successfully for: {}", email);
+            redirectAttributes.addFlashAttribute("message",
+                    "Пароль успешно обновлен! Теперь вы можете войти с новым паролем.");
+            return "redirect:/login";
 
         } catch (Exception e) {
+            logger.error("Password reset error for token: {}", token, e);
             model.addAttribute("error", "Ошибка при сбросе пароля: " + e.getMessage());
             model.addAttribute("token", token);
             return "reset-password";

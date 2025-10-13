@@ -4,23 +4,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
-    @Autowired
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+
     private final JavaMailSender mailSender;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     @Value("${spring.mail.username}")
     private String from;
 
+    // Конструктор с внедрением зависимости
+    @Autowired
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
+    @Async("emailTaskExecutor")
     public void sendVerificationEmail(String email, String verificationToken) {
         String subject = "Email Verification";
         String path = "/req/signup/verify";
@@ -28,7 +38,7 @@ public class EmailService {
         sendEmail(email, verificationToken, subject, path, message);
     }
 
-
+    @Async("emailTaskExecutor")
     public void sendForgotPasswordEmail(String email, String resetToken) {
         String subject = "Password Reset Request";
         String path = "/req/reset-password";
@@ -36,13 +46,10 @@ public class EmailService {
         sendEmail(email, resetToken, subject, path, message);
     }
 
-
     private void sendEmail(String email, String token, String subject, String path, String message) {
         try {
-            String actionUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path(path)
-                    .queryParam("token", token)
-                    .toUriString();
+            // Используем baseUrl вместо ServletUriComponentsBuilder
+            String actionUrl = baseUrl + path + "?token=" + token;
 
             String content = """
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
@@ -61,13 +68,15 @@ public class EmailService {
             helper.setTo(email);
             helper.setSubject(subject);
             helper.setFrom(from);
-            System.out.println("FROM EMAIL: " + from);
-            System.out.println("Verification email sent to: " + email);
+
+            logger.info("Sending email from: {} to: {}", from, email);
             helper.setText(content, true);
+
             mailSender.send(mimeMessage);
+            logger.info("Email sent successfully to: {}", email);
 
         } catch (Exception e) {
-            System.err.println("Failed to send email: " + e.getMessage());
+            logger.error("Failed to send email to {}: {}", email, e.getMessage(), e);
         }
     }
 }
