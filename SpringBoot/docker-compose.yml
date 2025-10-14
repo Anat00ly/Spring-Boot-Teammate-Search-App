@@ -1,23 +1,29 @@
-version: '3.8'
 services:
   app:
-    image: springboot
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - postgres
+      - mailhog
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/users_db2
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/users_db2
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-    networks:
-      - app-network
+      - APP_BASE_URL=http://localhost:8080
+      # ДОБАВЬ ЭТИ НАСТРОЙКИ ПОЧТЫ:
+      - SPRING_MAIL_HOST=mailhog
+      - SPRING_MAIL_PORT=1025
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=false
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=false
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE=false
+    volumes:
+      - uploads_data:/app/uploads
+    restart: unless-stopped
 
-  db:
-    image: postgres:14
+  postgres:
+    image: postgres:15
     environment:
       - POSTGRES_DB=users_db2
       - POSTGRES_USER=postgres
@@ -25,13 +31,16 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - app-network
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
-networks:
-  app-network:
-    driver: bridge
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"   # SMTP порт
+      - "8025:8025"   # Web UI для просмотра писем
+    restart: unless-stopped
 
 volumes:
-  db-data:
+  postgres_data:
+  uploads_data:
