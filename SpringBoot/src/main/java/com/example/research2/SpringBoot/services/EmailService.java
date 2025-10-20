@@ -24,7 +24,6 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String from;
 
-    // Конструктор с внедрением зависимости
     @Autowired
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -48,7 +47,14 @@ public class EmailService {
 
     private void sendEmail(String email, String token, String subject, String path, String message) {
         try {
-            // Используем baseUrl вместо ServletUriComponentsBuilder
+            // Диагностика
+            logger.info("========== EMAIL DEBUG INFO ==========");
+            logger.info("Mail sender bean exists: {}", mailSender != null);
+            logger.info("From address configured: {}", from);
+            logger.info("Base URL: {}", baseUrl);
+            logger.info("Recipient email: {}", email);
+            logger.info("======================================");
+
             String actionUrl = baseUrl + path + "?token=" + token;
 
             String content = """
