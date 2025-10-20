@@ -5,6 +5,9 @@ import com.example.research2.SpringBoot.models.Post;
 import com.example.research2.SpringBoot.repositories.PlayerRepo;
 import com.example.research2.SpringBoot.repositories.PostRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,10 +25,12 @@ public class PostService {
         this.playerRepo = playerRepo;
     }
 
+    @Cacheable(value = "allPosts")
     public List<Post> getAllPosts() {
         return postRepo.findAllByOrderByCreatedAtDesc();
     }
 
+    @Cacheable(value = "posts", key = "#id", unless = "#result == null")
     public Post findPostById(Long id) {
         return postRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пост не найден: " + id));
@@ -35,6 +40,7 @@ public class PostService {
         return postRepo.save(post);
     }
 
+    @CacheEvict(value = {"allPosts", "searchPosts"}, allEntries = true)
     public Post createPost(Long playerId, Post post) {
         Player player = playerRepo.findById(playerId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + playerId));
@@ -43,6 +49,11 @@ public class PostService {
         return postRepo.save(post);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = "allPosts", allEntries = true),
+            @CacheEvict(value = "searchPosts", allEntries = true)
+    })
     public void updatePost(Long id, Post updatedPost, Long userId) {
         Post currentPost = postRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пост не найден: " + id));
@@ -56,6 +67,11 @@ public class PostService {
         postRepo.save(currentPost);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = "allPosts", allEntries = true),
+            @CacheEvict(value = "searchPosts", allEntries = true)
+    })
     public void deletePost(Long id, Long userId) {
         Post currentPost = postRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пост не найден: " + id));
@@ -65,6 +81,8 @@ public class PostService {
         postRepo.delete(currentPost);
     }
 
+    @Cacheable(value = "searchPosts",
+            key = "#title + '_' + #game + '_' + #hoursFrom + '_' + #hoursTo")
     public List<Post> searchPost(String title, String game, Integer hoursFrom, Integer hoursTo){
         List<Post> allPosts = postRepo.findAll();
         return allPosts.stream()

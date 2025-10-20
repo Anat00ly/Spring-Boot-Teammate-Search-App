@@ -8,6 +8,8 @@ import com.example.research2.SpringBoot.repositories.NotificationRepo;
 import com.example.research2.SpringBoot.repositories.PlayerRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class FriendshipService {
     }
 
     @Transactional
+    @Cacheable(value = "friends", key = "#player.id")
     public List<Player> getFriends(Player player) {
         List<Player> friends = new ArrayList<>();
         for (Friendship request : player.getSentFriendRequest()) {
@@ -53,6 +56,7 @@ public class FriendshipService {
     }
 
     @Transactional
+    @CacheEvict(value = {"friends", "friendshipStatus"}, allEntries = true)
     public boolean sendFriendRequest(Long senderId, Long receiverId) {
         Player sender = playerRepo.findById(senderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sender does not exist"));
@@ -85,6 +89,7 @@ public class FriendshipService {
     }
 
     @Transactional
+    @CacheEvict(value = {"friends", "friendshipStatus"}, allEntries = true)
     public boolean removeFriend(Long friendshipId, Long currentPlayerId) {
         Friendship friendship = friendshipRepo.findById(friendshipId)
                 .orElseThrow(() -> new IllegalArgumentException("Friendship not found"));
@@ -109,6 +114,7 @@ public class FriendshipService {
 
 
     @Transactional
+    @CacheEvict(value = {"friends", "friendshipStatus"}, allEntries = true)
     public boolean acceptFriendRequest(Long friendshipId, Long currentPlayerId) {
         Friendship friendship = friendshipRepo.findById(friendshipId)
                 .orElseThrow(() -> new IllegalArgumentException("Request does not exist"));
@@ -135,6 +141,7 @@ public class FriendshipService {
     }
 
     @Transactional
+    @CacheEvict(value = {"friends", "friendshipStatus"}, allEntries = true)
     public void declineFriendRequest(Long friendshipId, Long currentPlayerId) {
         Friendship friendship = friendshipRepo.findById(friendshipId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
@@ -165,6 +172,7 @@ public class FriendshipService {
     }
 
     @Transactional
+    @Cacheable(value = "friendshipStatus", key = "#player1Id + '_' + #player2Id")
     public boolean areFriends(Long player1Id, Long player2Id) {
         return friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(player1Id, player2Id, FriendRequestStatus.ACCEPTED) ||
                 friendshipRepo.existsBySenderIdAndReceiverIdAndFriendRequestStatus(player2Id, player1Id, FriendRequestStatus.ACCEPTED);

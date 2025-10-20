@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +43,7 @@ public class PlayerService {
         this.playerRepo = playerRepo;
     }
 
+    @CacheEvict(value = {"players", "playerByEmail", "playerById"}, allEntries = true)
     public Player registerPlayer(Player player) {
 
         if (player.getAvatarURL() == null || player.getAvatarURL().isEmpty()) {
@@ -47,6 +52,7 @@ public class PlayerService {
         return playerRepo.save(player);
     }
 
+    @Cacheable(value = "players", key = "#email")
     public List<Player> findAllExceptCurrentPlayer(String email) {
         List<Player> players = playerRepo.findAllByEmailNot(email);
         // Возвращаем только подтверждённых пользователей
@@ -55,6 +61,8 @@ public class PlayerService {
                 .toList();
     }
 
+    @Cacheable(value = "searchPlayers",
+            key = "#currentUserEmail + '_' + #name + '_' + #gender + '_' + #country + '_' + #timezone + '_' + #language + '_' + #game + '_' + #ageFrom + '_' + #ageTo")
     public List<Player> searchPlayers(String currentUserEmail, String name, String gender, String country,
                                       String timezone, String language, String game,
                                       Integer ageFrom, Integer ageTo) {
@@ -87,7 +95,7 @@ public class PlayerService {
     }
 
 
-
+    @Cacheable(value = "playerByEmail", key = "#email", unless = "#result == null")
     public Player findPlayerByEmail(String email) {
         return playerRepo.findByEmail(email).orElse(null);
     }
@@ -97,6 +105,12 @@ public class PlayerService {
                 .orElseThrow(() -> new RuntimeException("Can't find the player"));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "playerById", key = "#id"),
+            @CacheEvict(value = "playerByEmail", allEntries = true),
+            @CacheEvict(value = "players", allEntries = true),
+            @CacheEvict(value = "searchPlayers", allEntries = true)
+    })
     public void updatePlayer(Long id, Player player) {
         Player currentPlayer = playerRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Can't find the player"));
@@ -122,6 +136,7 @@ public class PlayerService {
         return findPlayerByEmail(email);
     }
 
+    @Cacheable(value = "playerById", key = "#id", unless = "#result == null")
     public Player findById(Long id) {
         return findPlayerById(id);
     }
@@ -140,6 +155,7 @@ public class PlayerService {
         }
     }
 
+    @CacheEvict(value = {"players", "playerByEmail", "playerById"}, allEntries = true)
     public boolean verifyPlayer(String verificationToken) {
         List<Player> allPlayers = playerRepo.findAll();
         for (Player player : allPlayers) {
@@ -153,6 +169,11 @@ public class PlayerService {
         return false;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "playerById", key = "#playerId"),
+            @CacheEvict(value = "playerByEmail", allEntries = true),
+            @CacheEvict(value = "players", allEntries = true)
+    })
     public void updateAvatar(Long playerId, MultipartFile file) throws IOException {
         Player player = playerRepo.findById(playerId)
                 .orElseThrow(() -> new RuntimeException("Player not found"));
@@ -201,11 +222,16 @@ public class PlayerService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "playerById", key = "#player.id"),
+            @CacheEvict(value = "playerByEmail", key = "#player.email")
+    })
     public void updatePassword(Player player, String newPassword, PasswordEncoder passwordEncoder) {
         player.setPassword(passwordEncoder.encode(newPassword));
         playerRepo.save(player);
     }
 
+    @CacheEvict(value = {"playerById", "onlineStatus"}, key = "#id")
     public void updateLastActive(Long id){
         Player player = playerRepo.findById(id).orElse(null);
         if(player != null){
@@ -214,6 +240,8 @@ public class PlayerService {
         }
     }
 
+
+    @Cacheable(value = "onlineStatus", key = "#player.id", unless = "#result == false")
     public boolean isOnline(Player player){
         if(player.getLastActive() != null && player.getLastActive().isAfter(LocalDateTime.now()
                 .minusMinutes(2))){
